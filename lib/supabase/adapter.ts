@@ -1,12 +1,17 @@
 import { Invitation, RsvpEntry, WishEntry, GuestLink, Order } from '@/types';
 
+function isValidUuid(id?: string | null): boolean {
+  if (!id) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+}
+
 /**
  * Converts a frontend TypeScript Invitation into a Supabase table row format (snake_case + JSONB).
  */
 export function invitationToDbRow(inv: Invitation) {
   return {
     id: inv.id,
-    user_id: inv.userId || null,
+    user_id: isValidUuid(inv.userId) ? inv.userId : null,
     title: inv.title || 'Untitled Invitation',
     slug: inv.slug,
     service_type: inv.serviceType || 'diy',
@@ -208,7 +213,7 @@ export function orderToDbRow(order: Order) {
   return {
     id: order.id && order.id.includes('-') && order.id.length === 36 ? order.id : undefined,
     order_number: order.orderNumber,
-    user_id: order.userId || null,
+    user_id: isValidUuid(order.userId) ? order.userId : null,
     invitation_id: order.invitationId,
     items: order.items || [],
     total_amount: order.totalAmount || 0,
