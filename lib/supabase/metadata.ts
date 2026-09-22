@@ -31,6 +31,24 @@ export async function getInvitationDataForServer(slug: string): Promise<Invitati
 
       if (data) {
         invitationData = dbRowToInvitation(data);
+      } else {
+        // Fallback: Check if slug is a guest_slug in guest_links
+        const { data: guestMatch } = await supabase
+          .from('guest_links')
+          .select('invitation_id')
+          .eq('guest_slug', slug)
+          .maybeSingle();
+
+        if (guestMatch?.invitation_id) {
+          const { data: parentInv } = await supabase
+            .from('invitations')
+            .select('*')
+            .eq('id', guestMatch.invitation_id)
+            .maybeSingle();
+          if (parentInv) {
+            invitationData = dbRowToInvitation(parentInv);
+          }
+        }
       }
     } catch (e) {
       console.warn('[Server Invitation] Could not fetch from Supabase:', e);
@@ -98,6 +116,25 @@ export async function getInvitationMetaInfo(
 
           if (guestData?.guest_name) {
             guestName = guestData.guest_name;
+          }
+        }
+      } else {
+        // Fallback: slug itself might be a guest_slug (e.g. /heru-dan-pasangan)
+        const { data: guestMatch } = await supabase
+          .from('guest_links')
+          .select('invitation_id, guest_name')
+          .eq('guest_slug', slug)
+          .maybeSingle();
+
+        if (guestMatch) {
+          guestName = guestMatch.guest_name;
+          const { data: parentInv } = await supabase
+            .from('invitations')
+            .select('*')
+            .eq('id', guestMatch.invitation_id)
+            .maybeSingle();
+          if (parentInv) {
+            invitationData = dbRowToInvitation(parentInv);
           }
         }
       }

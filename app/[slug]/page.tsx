@@ -47,6 +47,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function PublicInvitationPage({ params }: PageProps) {
   const { slug } = await params;
-  const initialInvitation = await getInvitationDataForServer(slug);
-  return <PublicInvitationClient slug={slug} initialInvitation={initialInvitation} />;
+  const [initialInvitation, meta] = await Promise.all([
+    getInvitationDataForServer(slug),
+    getInvitationMetaInfo(slug),
+  ]);
+  return (
+    <PublicInvitationClient
+      slug={slug}
+      initialInvitation={initialInvitation}
+      guestName={meta.guestName}
+    />
+  );
 }

@@ -653,7 +653,7 @@ function DashboardContent() {
                   ) : (
                     guests.map((g) => {
                       const guestUrl = `${liveUrl}/${g.guestSlug}`;
-                      const formattedMessage = formatWhatsAppMessage(waTemplate, g, currentInv, origin);
+                      const formattedMessage = formatWhatsAppMessage(waTemplate, g, currentInv, liveUrl);
                       const targetWaNumber = g.whatsappNumber
                         ? g.whatsappNumber.replace(/[^0-9]/g, '').replace(/^08/, '628')
                         : '';

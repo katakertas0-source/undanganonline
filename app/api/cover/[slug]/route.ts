@@ -29,6 +29,24 @@ export async function GET(
 
       if (data?.cover_image_url) {
         coverUrl = data.cover_image_url;
+      } else {
+        // Fallback: check if slug is a guest_slug
+        const { data: guestMatch } = await supabase
+          .from('guest_links')
+          .select('invitation_id')
+          .eq('guest_slug', slug)
+          .maybeSingle();
+
+        if (guestMatch?.invitation_id) {
+          const { data: parentInv } = await supabase
+            .from('invitations')
+            .select('cover_image_url')
+            .eq('id', guestMatch.invitation_id)
+            .maybeSingle();
+          if (parentInv?.cover_image_url) {
+            coverUrl = parentInv.cover_image_url;
+          }
+        }
       }
     }
 

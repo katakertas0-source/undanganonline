@@ -9,9 +9,11 @@ import { Invitation } from '@/types';
 export function PublicInvitationClient({
   slug,
   initialInvitation = null,
+  guestName,
 }: {
   slug: string;
   initialInvitation?: Invitation | null;
+  guestName?: string;
 }) {
   const [invitation, setInvitation] = useState<Invitation | null>(initialInvitation);
   const [mounted, setMounted] = useState(false);
@@ -69,5 +71,5 @@ export function PublicInvitationClient({
     notFound();
   }
 
-  return <InvitationEngine invitation={invitation} />;
+  return <InvitationEngine invitation={invitation} guestName={guestName} />;
 }
