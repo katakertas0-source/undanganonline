@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, Inter } from 'next/font/google';
+import { getSiteOrigin } from '@/lib/supabase/metadata';
 import './globals.css';
 
 const cormorant = Cormorant_Garamond({
@@ -18,6 +19,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteOrigin()),
   title: 'Kertas.Kata — Undangan Online Simple, Elegant, Exclusive',
   description: 'Digital invitations designed for meaningful moments. High-fashion editorial aesthetics inspired by timeless minimalism by Kertas.Kata.',
   icons: {

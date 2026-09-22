@@ -49,14 +49,28 @@ export async function getInvitationDataForServer(slug: string): Promise<Invitati
   return invitationData;
 }
 
+export function getSiteOrigin(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, '');
+  }
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL.replace(/\/$/, '')}`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL.replace(/\/$/, '')}`;
+  }
+  return 'https://undanganonline-alpha.vercel.app';
+}
+
 /**
  * Server-safe helper to retrieve metadata for OpenGraph and WhatsApp crawler previews
  */
 export async function getInvitationMetaInfo(
   slug: string,
   guestSlug?: string,
-  origin: string = 'https://undanganonline.com'
+  origin?: string
 ): Promise<InvitationMetaInfo> {
+  const resolvedOrigin = (origin || getSiteOrigin()).replace(/\/$/, '');
   const supabase = getSupabase();
   let invitationData: any = null;
   let guestName: string | undefined = undefined;
@@ -130,7 +144,19 @@ export async function getInvitationMetaInfo(
   const groom = invitationData?.couple?.groomNickname || 'Groom';
   const bride = invitationData?.couple?.brideNickname || 'Bride';
   const dateStr = invitationData?.eventDate || 'Save The Date';
-  const coverUrl = invitationData?.coverImageUrl || '';
+  
+  // Ensure cover photo is a valid absolute HTTPS URL for WhatsApp crawlers
+  const rawCoverUrl = invitationData?.coverImageUrl || '';
+  let coverUrl = '';
+  if (rawCoverUrl) {
+    if (rawCoverUrl.startsWith('http://') || rawCoverUrl.startsWith('https://')) {
+      coverUrl = rawCoverUrl;
+    } else {
+      coverUrl = `${resolvedOrigin}${rawCoverUrl.startsWith('/') ? '' : '/'}${rawCoverUrl}`;
+    }
+  } else {
+    coverUrl = `${resolvedOrigin}/images/mahadewi-cover.jpg`;
+  }
 
   const mainTitle = guestName
     ? `Undangan Spesial untuk ${guestName} | ${groom} & ${bride}`
@@ -146,9 +172,9 @@ export async function getInvitationMetaInfo(
   ogParams.set('bride', bride);
   if (guestName) ogParams.set('guest', guestName);
   if (dateStr) ogParams.set('date', dateStr);
-  if (coverUrl && coverUrl.startsWith('http')) ogParams.set('cover', coverUrl);
+  if (coverUrl) ogParams.set('cover', coverUrl);
 
-  const ogImageUrl = `${origin}/api/og?${ogParams.toString()}`;
+  const ogImageUrl = `${resolvedOrigin}/api/og?${ogParams.toString()}`;
 
   return {
     title: mainTitle,
