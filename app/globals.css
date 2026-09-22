@@ -1,0 +1,260 @@
+@import "tailwindcss";
+
+:root {
+  --bg-offwhite: #F8F7F3;
+  --text-noir: #111111;
+  --white: #FFFFFF;
+  --grey-subtle: #8A8A8A;
+  --linen-beige: #D8D0C4;
+  --border-light: rgba(17, 17, 17, 0.1);
+  --border-dark: rgba(255, 255, 255, 0.15);
+}
+
+@theme {
+  --font-serif: var(--font-cormorant), "Times New Roman", Georgia, serif;
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --color-offwhite: #F8F7F3;
+  --color-noir: #111111;
+  --color-linen: #D8D0C4;
+  --color-subtle: #8A8A8A;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: #F8F7F3;
+  color: #111111;
+}
+
+::selection {
+  background-color: #D8D0C4;
+  color: #111111;
+}
+
+/* Custom fine scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F8F7F3;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D8D0C4;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8A8A8A;
+}
+
+/* Subtle editorial animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes curtainReveal {
+  from {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-curtain {
+  animation: curtainReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Editorial letterspacing utilities */
+.tracking-ultra {
+  letter-spacing: 0.25em;
+}
+
+.tracking-widest-plus {
+  letter-spacing: 0.18em;
+}
+
+/* Living Video Motion Theme: Translucent glass sections across entire invitation */
+.video-motion-theme {
+  background-color: transparent !important;
+}
+
+.video-motion-theme section {
+  background-color: var(--video-section-bg, rgba(12, 10, 9, 0.4)) !important;
+  backdrop-filter: blur(var(--video-blur, 8px)) !important;
+  -webkit-backdrop-filter: blur(var(--video-blur, 8px)) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* SMART CONTRAST: Any text sitting directly on the translucent video section canvas MUST be crisp, light & readable */
+.video-motion-theme section {
+  color: #FAF8F5 !important;
+}
+
+.video-motion-theme section h2 {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.video-motion-theme #section-couple h3,
+.video-motion-theme #section-story h3 {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.video-motion-theme #section-couple .text-\[\#8C4830\],
+.video-motion-theme #section-couple .text-\[\#C85A32\],
+.video-motion-theme #section-couple .text-\[\#4A5340\],
+.video-motion-theme #section-couple .text-\[\#9B8070\],
+.video-motion-theme #section-story .text-\[\#8C4830\],
+.video-motion-theme #section-story .text-\[\#C85A32\],
+.video-motion-theme #section-countdown .text-\[\#8C4830\],
+.video-motion-theme #section-countdown .text-\[\#C85A32\] {
+  color: #E5C378 !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.video-motion-theme #section-couple .text-neutral-600,
+.video-motion-theme #section-couple .text-neutral-500,
+.video-motion-theme #section-story .text-neutral-600,
+.video-motion-theme #section-story .text-neutral-500 {
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* =========================================================================
+   SMART CARD ISOLATION FOR VIDEO MOTION THEME
+   Cards with white/light backgrounds (Event cards, Wishes form/cards, etc.)
+   must ALWAYS preserve sharp, opaque, authentic contrast:
+   - ZERO text-shadow on any element inside the card (prevents blur / fuzzy edges)
+   - High contrast dark text, headings, and icons
+   - Terracotta / themed badges and buttons stay crisp (prevents censor-bar effect)
+   ========================================================================= */
+.video-motion-theme .bg-white,
+.video-motion-theme .bg-white *,
+.video-motion-theme [class*="bg-white"],
+.video-motion-theme [class*="bg-white"] * {
+  text-shadow: none !important;
+}
+
+/* Specific overrides for #section-events cards */
+.video-motion-theme #section-events .bg-white {
+  background-color: #FFFFFF !important;
+  color: #24201D !important;
+}
+
+.video-motion-theme #section-events .bg-white h3,
+.video-motion-theme #section-events .bg-white h4 {
+  color: #1A1816 !important;
+  text-shadow: none !important;
+}
+
+.video-motion-theme #section-events .bg-white p {
+  color: #4A4540 !important;
+  text-shadow: none !important;
+}
+
+/* Badges inside event cards: e.g. PARIKRAMA 02, SCENE 01, etc. */
+.video-motion-theme #section-events .bg-white span.text-\[\#8C4830\],
+.video-motion-theme #section-events .bg-white .text-\[\#8C4830\] {
+  color: #8C4830 !important;
+  text-shadow: none !important;
+}
+
+.video-motion-theme #section-events .bg-white span.text-\[\#C85A32\],
+.video-motion-theme #section-events .bg-white .text-\[\#C85A32\] {
+  color: #C85A32 !important;
+  text-shadow: none !important;
+}
+
+.video-motion-theme #section-events .bg-white .text-neutral-600,
+.video-motion-theme #section-events .bg-white .text-neutral-500 {
+  color: #525252 !important;
+  text-shadow: none !important;
+}
+
+/* Interactive buttons (Google Maps, Simpan Kalender) inside cards */
+.video-motion-theme #section-events .bg-white a.border-\[\#8C4830\],
+.video-motion-theme #section-events .bg-white a.text-\[\#8C4830\] {
+  color: #8C4830 !important;
+  border-color: #8C4830 !important;
+  text-shadow: none !important;
+}
+
+.video-motion-theme #section-events .bg-white a.border-\[\#C85A32\],
+.video-motion-theme #section-events .bg-white a.text-\[\#C85A32\] {
+  color: #C85A32 !important;
+  border-color: #C85A32 !important;
+  text-shadow: none !important;
+}
+
+.video-motion-theme #section-events .bg-white button.text-\[\#8C4830\],
+.video-motion-theme #section-events .bg-white button[class*="text-[#8C4830]"] {
+  color: #8C4830 !important;
+  text-shadow: none !important;
+}
+
+.video-motion-theme #section-events .bg-white button.text-\[\#C85A32\],
+.video-motion-theme #section-events .bg-white button[class*="text-[#C85A32]"] {
+  color: #C85A32 !important;
+  text-shadow: none !important;
+}
+
+/* Wishes section cards & inputs when white */
+.video-motion-theme #section-wishes .bg-white {
+  background-color: #FFFFFF !important;
+  color: #1A1816 !important;
+}
+
+.video-motion-theme #section-wishes .bg-white label {
+  color: #666666 !important;
+  text-shadow: none !important;
+}
+
+.video-motion-theme #section-wishes .bg-white input,
+.video-motion-theme #section-wishes .bg-white textarea {
+  background-color: #FFFFFF !important;
+  color: #111111 !important;
+  border-color: #D4D4D4 !important;
+  text-shadow: none !important;
+}
+
+.video-motion-theme #section-wishes .bg-white p {
+  color: #4A4540 !important;
+  text-shadow: none !important;
+}
+
+.video-motion-theme footer {
+  background-color: var(--video-footer-bg, rgba(12, 10, 9, 0.55)) !important;
+  backdrop-filter: blur(var(--video-blur, 8px)) !important;
+  -webkit-backdrop-filter: blur(var(--video-blur, 8px)) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+}
+
+.video-motion-theme input,
+.video-motion-theme textarea {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #FFFFFF !important;
+}
+
+.video-motion-theme select {
+  background-color: #1A1816 !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #FFFFFF !important;
+}
