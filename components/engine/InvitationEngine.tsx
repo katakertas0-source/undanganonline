@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Invitation } from '@/types';
 import { getTemplateById } from '@/lib/store';
 import { CoverSection } from './CoverSection';
@@ -474,9 +475,20 @@ export function InvitationEngine({
               <p className="font-serif text-lg tracking-wider uppercase mb-1">
                 {invitation.couple.groomNickname} &amp; {invitation.couple.brideNickname}
               </p>
-              <p className="text-[10px] uppercase tracking-ultra mt-4">
-                POWERED BY UNDANGAN ONLINE · SIMPLE. ELEGANT. EXCLUSIVE.
-              </p>
+              <div className="flex flex-col items-center justify-center gap-1.5 mt-4 pt-4 border-t border-current/10 opacity-70">
+                <div className="relative w-5 h-5 opacity-80">
+                  <Image
+                    src="/images/logo-icon.png"
+                    alt="Kertas.Kata"
+                    width={20}
+                    height={20}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <p className="text-[9px] uppercase tracking-ultra">
+                  POWERED BY KERTAS.KATA · SIMPLE. ELEGANT. EXCLUSIVE.
+                </p>
+              </div>
             </footer>
           </div>
         )}

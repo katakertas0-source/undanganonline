@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Menu, X, ArrowRight, User, LogOut } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase/client';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -57,13 +58,25 @@ export function MinimalNav() {
       <header className="sticky top-0 z-40 bg-[#F8F7F3]/90 backdrop-blur-md border-b border-neutral-200/70 transition-all">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 h-20 flex items-center justify-between">
           {/* Brand Wordmark */}
-          <Link href="/" className="group flex flex-col">
-            <span className="font-serif tracking-widest text-lg sm:text-xl uppercase font-semibold text-[#111111]">
-              UNDANGAN ONLINE
-            </span>
-            <span className="text-[8px] uppercase tracking-ultra text-neutral-400 font-sans">
-              EDITORIAL DIGITAL INVITATIONS
-            </span>
+          <Link href="/" className="group flex items-center gap-3 hover:opacity-90 transition-opacity">
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center">
+              <Image
+                src="/images/logo-icon.png"
+                alt="Kertas.Kata Logo"
+                width={40}
+                height={40}
+                className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                priority
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-serif tracking-widest text-lg sm:text-xl uppercase font-semibold text-[#111111] leading-none">
+                KERTAS.KATA
+              </span>
+              <span className="text-[8px] uppercase tracking-ultra text-neutral-400 font-sans mt-1">
+                EDITORIAL DIGITAL INVITATIONS
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Links */}

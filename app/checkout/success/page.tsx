@@ -125,7 +125,7 @@ Password : ${password}
 - Tambahkan nama tamu & klik tombol WhatsApp untuk kirim undangan dengan nama khusus.
 
 ✨ Simpan pesan ini di Catatan HP Anda!
-Powered by Undangan Online`;
+Powered by Kertas.Kata`;
 
     navigator.clipboard.writeText(textSummary);
     setCopiedAll(true);

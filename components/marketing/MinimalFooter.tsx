@@ -2,15 +2,25 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function MinimalFooter() {
   return (
     <footer className="bg-[#111111] text-[#F8F7F3] border-t border-neutral-800 py-20 px-6 sm:px-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12">
         <div className="md:col-span-6 space-y-4">
-          <Link href="/" className="inline-block">
-            <span className="font-serif tracking-widest text-2xl uppercase font-medium">
-              UNDANGAN ONLINE
+          <Link href="/" className="inline-flex items-center gap-3.5 group">
+            <div className="relative w-10 h-10 flex-shrink-0">
+              <Image
+                src="/images/logo-icon-light.png"
+                alt="Kertas.Kata Logo"
+                width={40}
+                height={40}
+                className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+              />
+            </div>
+            <span className="font-serif tracking-widest text-2xl uppercase font-medium text-white">
+              KERTAS.KATA
             </span>
           </Link>
           <p className="text-xs text-neutral-400 font-light max-w-md leading-relaxed">
@@ -82,7 +92,7 @@ export function MinimalFooter() {
       </div>
 
       <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-neutral-900 flex flex-col sm:flex-row items-center justify-between text-[11px] text-neutral-500">
-        <p>© {new Date().getFullYear()} Undangan Online. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Kertas.Kata. All rights reserved.</p>
         <p className="mt-4 sm:mt-0 tracking-widest uppercase text-[10px]">
           JAKARTA · BALI · SINGAPORE
         </p>

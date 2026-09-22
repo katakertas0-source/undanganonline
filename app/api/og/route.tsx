@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
               fontWeight: 500,
             }}
           >
-            UNDANGAN ONLINE · OFFICIAL INVITATION
+            KERTAS.KATA · OFFICIAL INVITATION
           </span>
         </div>
 

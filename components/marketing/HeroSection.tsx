@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 
 export function HeroSection() {
@@ -19,8 +20,15 @@ export function HeroSection() {
       </div>
 
       <div className="relative z-10 max-w-4xl mx-auto text-center">
-        <div className="inline-block px-4 py-1 text-[10px] uppercase tracking-ultra font-sans text-neutral-600 border border-neutral-300 rounded-full mb-8 bg-white/70 backdrop-blur-sm">
-          <span>PARISIAN MINIMALISM · BERLIN EDITORIAL</span>
+        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 text-[10px] uppercase tracking-ultra font-sans text-neutral-800 border border-neutral-300 rounded-full mb-8 bg-white/80 backdrop-blur-sm shadow-2xs">
+          <Image
+            src="/images/logo-icon.png"
+            alt="Kertas.Kata"
+            width={16}
+            height={16}
+            className="w-4 h-4 object-contain inline-block"
+          />
+          <span>KERTAS.KATA · EDITORIAL DIGITAL INVITATIONS</span>
         </div>
 
         <h1 className="font-serif text-5xl sm:text-7xl md:text-8xl tracking-tight leading-[1.05] text-[#111111] uppercase font-light">

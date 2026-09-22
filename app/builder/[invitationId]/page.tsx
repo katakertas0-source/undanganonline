@@ -2,6 +2,7 @@
 
 import React, { use, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound, useRouter, useParams } from 'next/navigation';
 import {
   getInvitationById,
@@ -399,9 +400,18 @@ export default function BuilderPage() {
       {/* Top Builder Navigation Bar */}
       <header className="h-14 sm:h-16 px-3 sm:px-6 bg-white border-b border-neutral-200 flex items-center justify-between z-30 shrink-0">
         <div className="flex items-center gap-2 sm:gap-4 overflow-hidden min-w-0">
-          <Link href="/" className="font-serif tracking-wider sm:tracking-widest text-xs sm:text-base uppercase font-semibold shrink-0">
-            <span className="sm:hidden">U.O</span>
-            <span className="hidden sm:inline">UNDANGAN ONLINE</span>
+          <Link href="/" className="flex items-center gap-2 font-serif tracking-wider sm:tracking-widest text-xs sm:text-base uppercase font-semibold shrink-0 group hover:opacity-85 transition-opacity">
+            <div className="relative w-6 h-6 sm:w-7 sm:h-7 shrink-0">
+              <Image
+                src="/images/logo-icon.png"
+                alt="Kertas.Kata"
+                width={28}
+                height={28}
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <span className="sm:hidden font-serif">K.K</span>
+            <span className="hidden sm:inline font-serif tracking-widest">KERTAS.KATA</span>
           </Link>
           <span className="text-neutral-300">/</span>
           <span className="text-[11px] sm:text-xs uppercase tracking-wider text-neutral-500 font-medium truncate max-w-[100px] xs:max-w-[140px] sm:max-w-xs">

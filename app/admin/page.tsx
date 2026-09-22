@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   getAllInvitations,
   getAllInvitationsAsync,
@@ -461,8 +462,17 @@ export default function AdminPortalPage() {
       <header className="sticky top-0 z-40 bg-[#111111] text-white border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/" className="font-serif text-lg tracking-widest uppercase font-light text-neutral-100 hover:text-[#E5C378] transition-colors">
-              UNDANGAN ONLINE
+            <Link href="/" className="flex items-center gap-2.5 font-serif text-lg tracking-widest uppercase font-light text-neutral-100 hover:text-[#E5C378] transition-colors group">
+              <div className="relative w-6 h-6 shrink-0">
+                <Image
+                  src="/images/logo-icon-light.png"
+                  alt="Kertas.Kata"
+                  width={24}
+                  height={24}
+                  className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                />
+              </div>
+              <span>KERTAS.KATA</span>
             </Link>
             <span className="hidden sm:inline text-neutral-600">/</span>
             <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border border-[#E5C378]/30 bg-[#E5C378]/10 text-[10px] uppercase tracking-ultra text-[#E5C378] font-medium">

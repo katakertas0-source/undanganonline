@@ -134,7 +134,7 @@ export async function getInvitationMetaInfo(
 
   const mainTitle = guestName
     ? `Undangan Spesial untuk ${guestName} | ${groom} & ${bride}`
-    : `The Wedding of ${groom} & ${bride} | Undangan Online`;
+    : `The Wedding of ${groom} & ${bride} | Kertas.Kata`;
 
   const description = guestName
     ? `Tanpa mengurangi rasa hormat, kami mengundang ${guestName} untuk menghadiri perayaan pernikahan ${groom} & ${bride}.`

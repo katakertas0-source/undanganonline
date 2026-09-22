@@ -35,7 +35,7 @@ export default function HomePage() {
           </blockquote>
           <div className="w-12 h-[1px] bg-neutral-300 mx-auto mt-8 mb-4" />
           <p className="text-xs uppercase tracking-widest text-neutral-500">
-            THE UNDANGAN ONLINE STANDARD
+            THE KERTAS.KATA STANDARD
           </p>
         </div>
       </section>
