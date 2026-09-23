@@ -345,14 +345,18 @@ export function BaliHeritageLuxuryTemplate({
     groupHoverGoldBg: 'group-hover:bg-[#B89A5A]',
   };
 
-  // High-precision smooth scroll helper with CSS scale compensation
+  // High-precision smooth scroll helper with native scrollIntoView and container fallback
   const performSmoothScroll = (targetId: string) => {
     setIsNavOpen(false);
 
     setTimeout(() => {
+      // Find active container (the one that is actually visible in the DOM)
+      const desktopContainer = document.getElementById('device-viewport');
+      const mobileContainer = document.getElementById('device-viewport-mobile');
       const container =
-        document.getElementById('device-viewport') ||
-        document.getElementById('device-viewport-mobile');
+        (desktopContainer && desktopContainer.clientHeight > 0 ? desktopContainer : null) ||
+        (mobileContainer && mobileContainer.clientHeight > 0 ? mobileContainer : null) ||
+        null;
 
       // Special case: Cover / Beranda
       if (targetId === 'section-cover') {
@@ -367,15 +371,15 @@ export function BaliHeritageLuxuryTemplate({
       const el = document.getElementById(targetId);
       if (!el) return;
 
+      // 1. Native scrollIntoView works seamlessly across all platforms, viewports, and scales
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // 2. Direct container scrollTo calculation for device frame
       if (container) {
         const containerRect = container.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
-
-        // Accurately calculate scale factor if container is inside scale-[0.88] in builder
         const scale = container.offsetHeight > 0 ? containerRect.height / container.offsetHeight : 1;
         const relativeTop = (elRect.top - containerRect.top) / (scale || 1);
-
-        // Sticky header height is ~50px; scroll so the section header/title lands cleanly underneath
         const targetScroll = container.scrollTop + relativeTop - 52;
         container.scrollTo({
           top: Math.max(0, targetScroll),
@@ -390,20 +394,22 @@ export function BaliHeritageLuxuryTemplate({
           behavior: 'smooth',
         });
       }
-    }, 120);
+    }, 60);
   };
 
   // Auto-scroll inside preview container if activeSectionTarget changes
+  const prevActiveTargetRef = useRef<string | undefined>(undefined);
   useEffect(() => {
     if (!isPreview) return;
 
     if (!isOpen) {
-      const container =
-        document.getElementById('device-viewport') ||
-        document.getElementById('device-viewport-mobile');
+      const desktopContainer = document.getElementById('device-viewport');
+      const mobileContainer = document.getElementById('device-viewport-mobile');
+      const container = (desktopContainer && desktopContainer.clientHeight > 0 ? desktopContainer : null) || mobileContainer;
       if (container) {
         container.scrollTo({ top: 0, behavior: 'smooth' });
       }
+      prevActiveTargetRef.current = undefined;
       return;
     }
 
@@ -418,18 +424,16 @@ export function BaliHeritageLuxuryTemplate({
       rsvp: 'section-rsvp',
     };
 
-    const targetId = activeSectionTarget ? targetMap[activeSectionTarget] : 'section-tentang';
-    if (targetId) {
-      const timer = setTimeout(() => {
-        performSmoothScroll(targetId);
-      }, 100);
-      const timer2 = setTimeout(() => {
-        performSmoothScroll(targetId);
-      }, 320);
-      return () => {
-        clearTimeout(timer);
-        clearTimeout(timer2);
-      };
+    // Only scroll if activeSectionTarget actually changed from outside builder tabs
+    if (activeSectionTarget && activeSectionTarget !== prevActiveTargetRef.current) {
+      prevActiveTargetRef.current = activeSectionTarget;
+      const targetId = targetMap[activeSectionTarget];
+      if (targetId) {
+        const timer = setTimeout(() => {
+          performSmoothScroll(targetId);
+        }, 80);
+        return () => clearTimeout(timer);
+      }
     }
   }, [isOpen, activeSectionTarget, isPreview]);
 
@@ -438,11 +442,12 @@ export function BaliHeritageLuxuryTemplate({
     setIsOpen(true);
     setTimeout(() => {
       performSmoothScroll('section-tentang');
-    }, 150);
+    }, 120);
   };
 
   // Scroll to section from navigation drawer
   const scrollToSection = (sectionId: string) => {
+    setIsNavOpen(false);
     performSmoothScroll(sectionId);
   };
 
@@ -759,7 +764,7 @@ export function BaliHeritageLuxuryTemplate({
           {vis.profile && (
             <section
               id="section-tentang"
-              className={`${theme.lightBg} ${theme.lightText} py-16 sm:py-20 px-6 transition-colors duration-500 text-center`}
+              className={`${theme.lightBg} ${theme.lightText} py-16 sm:py-20 px-6 transition-colors duration-500 text-center scroll-mt-14`}
             >
               <div className="max-w-md sm:max-w-lg mx-auto flex flex-col items-center">
                 <Reveal delay={0}>
@@ -868,7 +873,7 @@ export function BaliHeritageLuxuryTemplate({
           {vis.story && invitation.loveStories && invitation.loveStories.length > 0 && (
             <section
               id="section-kisah"
-              className={`relative ${theme.darkBg} ${theme.darkText} py-20 px-6 overflow-hidden text-center`}
+              className={`relative ${theme.darkBg} ${theme.darkText} py-20 px-6 overflow-hidden text-center scroll-mt-14`}
             >
               {/* Subtle Misty Candi Bentar Background Silhouette */}
               <div className="absolute inset-0 z-0 opacity-15 pointer-events-none">
@@ -926,7 +931,7 @@ export function BaliHeritageLuxuryTemplate({
           {(vis.video || Boolean(invitation.videoUrl) || invitation.activeAddonIds?.includes('video-prewedding')) && (
             <section
               id="section-video"
-              className={`relative ${theme.darkBg} ${theme.darkText} py-20 px-6 overflow-hidden text-center`}
+              className={`relative ${theme.darkBg} ${theme.darkText} py-20 px-6 overflow-hidden text-center scroll-mt-14`}
             >
               <div className="max-w-md sm:max-w-lg mx-auto flex flex-col items-center">
                 <Reveal delay={0}>
@@ -984,7 +989,7 @@ export function BaliHeritageLuxuryTemplate({
           {vis.events && invitation.events && invitation.events.length > 0 && (
             <section
               id="section-acara"
-              className={`${theme.lightBg} ${theme.lightText} py-16 sm:py-20 px-6 transition-colors duration-500 text-center`}
+              className={`${theme.lightBg} ${theme.lightText} py-16 sm:py-20 px-6 transition-colors duration-500 text-center scroll-mt-14`}
             >
               <div className="max-w-md sm:max-w-lg mx-auto flex flex-col items-center">
                 <Reveal delay={0}>
@@ -1052,7 +1057,7 @@ export function BaliHeritageLuxuryTemplate({
           {/* ===================================================================== */}
           <section
             id="section-lokasi"
-            className={`${theme.darkBg} ${theme.darkText} py-20 px-6 text-center`}
+            className={`${theme.darkBg} ${theme.darkText} py-20 px-6 text-center scroll-mt-14`}
           >
             <div className="max-w-md sm:max-w-lg mx-auto flex flex-col items-center">
               <Reveal delay={0}>
@@ -1117,7 +1122,7 @@ export function BaliHeritageLuxuryTemplate({
           {vis.gallery && invitation.gallery && invitation.gallery.length > 0 && (
             <section
               id="section-galeri"
-              className={`${theme.lightBg} ${theme.lightText} py-16 sm:py-20 px-4 sm:px-6 transition-colors duration-500 text-center`}
+              className={`${theme.lightBg} ${theme.lightText} py-16 sm:py-20 px-4 sm:px-6 transition-colors duration-500 text-center scroll-mt-14`}
             >
               <div className="max-w-md sm:max-w-lg mx-auto flex flex-col items-center">
                 <Reveal delay={0}>
@@ -1225,7 +1230,7 @@ export function BaliHeritageLuxuryTemplate({
           {vis.rsvp && (
             <section
               id="section-rsvp"
-              className={`${theme.darkBg} ${theme.darkText} py-20 px-6 text-center`}
+              className={`${theme.darkBg} ${theme.darkText} py-20 px-6 text-center scroll-mt-14`}
             >
               <div className="max-w-md sm:max-w-lg mx-auto flex flex-col items-center">
                 <Reveal delay={0}>
@@ -1361,7 +1366,7 @@ export function BaliHeritageLuxuryTemplate({
           {vis.gifts && hasGifts && (
             <section
               id="section-tanda-kasih"
-              className={`${theme.lightBg} ${theme.lightText} py-16 sm:py-20 px-6 transition-colors duration-500 text-center`}
+              className={`${theme.lightBg} ${theme.lightText} py-16 sm:py-20 px-6 transition-colors duration-500 text-center scroll-mt-14`}
             >
               <div className="max-w-md sm:max-w-lg mx-auto flex flex-col items-center">
                 <Reveal delay={0}>
@@ -1457,7 +1462,7 @@ export function BaliHeritageLuxuryTemplate({
           {/* ===================================================================== */}
           <section
             id="section-penutup"
-            className={`relative min-h-[85vh] flex flex-col justify-between items-center text-center px-6 py-16 overflow-hidden ${theme.darkBg} ${theme.darkText}`}
+            className={`relative min-h-[85vh] flex flex-col justify-end items-center text-center px-6 pb-12 pt-20 overflow-hidden ${theme.darkBg} ${theme.darkText} scroll-mt-14`}
           >
             {/* Cinematic Full-Bleed Background Photo */}
             <div className="absolute inset-0 z-0">
