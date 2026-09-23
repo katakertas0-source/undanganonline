@@ -36,7 +36,7 @@ interface RevealProps {
   className?: string;
 }
 
-function Reveal({ children, delay = 0, yOffset = 20, className = '' }: RevealProps) {
+function Reveal({ children, delay = 0, yOffset = 30, className = '' }: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -53,17 +53,21 @@ function Reveal({ children, delay = 0, yOffset = 20, className = '' }: RevealPro
 
     const checkVisibility = () => {
       if (!el) return false;
+      const elRect = el.getBoundingClientRect();
+      if (elRect.width === 0 && elRect.height === 0) return false;
+
       if (container) {
         const cRect = container.getBoundingClientRect();
-        const elRect = el.getBoundingClientRect();
-        // Element is visible if its top is above container bottom + 60px and bottom below container top - 60px
-        if (elRect.top <= cRect.bottom + 60 && elRect.bottom >= cRect.top - 60) {
+        // Trigger as soon as the top of the element enters the bottom of the container
+        const triggerPoint = cRect.bottom - 20;
+        if (elRect.top <= triggerPoint && elRect.bottom >= cRect.top - 60) {
           setIsVisible(true);
           return true;
         }
       } else if (typeof window !== 'undefined') {
-        const elRect = el.getBoundingClientRect();
-        if (elRect.top <= window.innerHeight + 60 && elRect.bottom >= -60) {
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+        const triggerPoint = windowHeight - 20;
+        if (elRect.top <= triggerPoint && elRect.bottom >= -60) {
           setIsVisible(true);
           return true;
         }
@@ -71,16 +75,17 @@ function Reveal({ children, delay = 0, yOffset = 20, className = '' }: RevealPro
       return false;
     };
 
-    // Immediate check on mount
-    if (checkVisibility()) {
-      return;
-    }
+    // Check after layout paint
+    const rafId = requestAnimationFrame(() => {
+      checkVisibility();
+    });
 
-    // Passive scroll listener (fires instantaneously when user or script scrolls)
+    // Passive scroll listener: triggers smoothly when user scrolls the phone container or window
     const scrollTarget = container || (typeof window !== 'undefined' ? window : null);
     const handleScroll = () => {
       if (checkVisibility() && scrollTarget) {
         scrollTarget.removeEventListener('scroll', handleScroll);
+        if (observer) observer.disconnect();
       }
     };
 
@@ -88,53 +93,48 @@ function Reveal({ children, delay = 0, yOffset = 20, className = '' }: RevealPro
       scrollTarget.addEventListener('scroll', handleScroll, { passive: true });
     }
 
-    // Safety fallback: Never leave content trapped invisible if observer doesn't fire
-    const safetyTimer = setTimeout(() => {
-      setIsVisible(true);
-      if (scrollTarget) {
-        scrollTarget.removeEventListener('scroll', handleScroll);
-      }
-    }, 450 + delay);
-
     let observer: IntersectionObserver | null = null;
     if (typeof IntersectionObserver !== 'undefined') {
-      observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setIsVisible(true);
-              clearTimeout(safetyTimer);
-              if (scrollTarget) {
-                scrollTarget.removeEventListener('scroll', handleScroll);
+      try {
+        observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                setIsVisible(true);
+                if (scrollTarget) {
+                  scrollTarget.removeEventListener('scroll', handleScroll);
+                }
+                observer?.unobserve(entry.target);
               }
-              observer?.unobserve(entry.target);
-            }
-          });
-        },
-        {
-          root: container,
-          threshold: 0.01,
-          rootMargin: '50px 0px 50px 0px',
-        }
-      );
-      observer.observe(el);
+            });
+          },
+          {
+            root: container,
+            threshold: 0.05,
+            rootMargin: '0px 0px -20px 0px',
+          }
+        );
+        observer.observe(el);
+      } catch {
+        // Fallback gracefully to scroll listener
+      }
     }
 
     return () => {
-      clearTimeout(safetyTimer);
+      cancelAnimationFrame(rafId);
       if (scrollTarget) {
         scrollTarget.removeEventListener('scroll', handleScroll);
       }
-      observer?.disconnect();
+      if (observer) observer.disconnect();
     };
-  }, [delay]);
+  }, []);
 
   return (
     <div
       ref={ref}
       style={{
         transitionProperty: 'opacity, transform',
-        transitionDuration: '700ms',
+        transitionDuration: '800ms',
         transitionDelay: `${delay}ms`,
         transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
         opacity: isVisible ? 1 : 0,
