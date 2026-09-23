@@ -8,6 +8,7 @@ import { getAllTemplates, getAllPackages, getPackageById, createDraftInvitation 
 import { ArrowRight, Check, Lock } from 'lucide-react';
 import { TemplateDeviceMockup } from '@/components/marketing/TemplateDeviceMockup';
 import { Template } from '@/types';
+import { TEMPLATES } from '@/lib/data/catalog';
 
 function CreateForm() {
   const router = useRouter();
@@ -16,7 +17,11 @@ function CreateForm() {
   const initialTemplateParam = searchParams.get('template');
 
   const packages = getAllPackages();
-  const templates = getAllTemplates();
+  const [templates, setTemplates] = useState<Template[]>(TEMPLATES);
+
+  useEffect(() => {
+    setTemplates(getAllTemplates());
+  }, []);
 
   const matchedTemplate = initialTemplateParam
     ? templates.find((t) => t.id === initialTemplateParam)

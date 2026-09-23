@@ -3,13 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { getAllTemplates } from '@/lib/store';
 import { TemplateDeviceMockup } from './TemplateDeviceMockup';
-import { DIY_PACKAGES } from '@/lib/data/catalog';
+import { DIY_PACKAGES, TEMPLATES } from '@/lib/data/catalog';
 
 export function TemplateGrid() {
-  const [templates, setTemplates] = useState(() => getAllTemplates());
+  // Initialize with static TEMPLATES to ensure initial SSR HTML matches client hydration 100%
+  const [templates, setTemplates] = useState(TEMPLATES);
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
 
   useEffect(() => {
+    // Sync with client-side store (deleted items, custom prices) after initial mount
+    setTemplates(getAllTemplates());
+
     const handleUpdate = () => {
       setTemplates(getAllTemplates());
     };

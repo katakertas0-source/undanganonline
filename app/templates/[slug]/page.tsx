@@ -1,11 +1,13 @@
 'use client';
 
-import React, { use, useState } from 'react';
+import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { MinimalNav } from '@/components/marketing/MinimalNav';
 import { MinimalFooter } from '@/components/marketing/MinimalFooter';
 import { getTemplateById, getAllAddons, getAllInvitations, getSampleInvitationForTemplate } from '@/lib/store';
+import { TEMPLATES } from '@/lib/data/catalog';
+import { Template } from '@/types';
 import { InvitationEngine } from '@/components/engine/InvitationEngine';
 import { DeviceFrame } from '@/components/ui/DeviceFrame';
 import { Smartphone, Monitor, ArrowRight, Eye, Check } from 'lucide-react';
@@ -13,8 +15,21 @@ import { Smartphone, Monitor, ArrowRight, Eye, Check } from 'lucide-react';
 export default function TemplateDetailPage() {
   const routeParams = useParams();
   const slug = (routeParams?.slug as string) || '';
-  const template = getTemplateById(slug);
+  const initialTemplate = TEMPLATES.find((t) => t.slug === slug || t.id === slug);
+  const [template, setTemplate] = useState<Template | undefined>(initialTemplate);
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile');
+
+  useEffect(() => {
+    const live = getTemplateById(slug);
+    if (live) setTemplate(live);
+
+    const handleUpdate = () => {
+      const updated = getTemplateById(slug);
+      if (updated) setTemplate(updated);
+    };
+    window.addEventListener('uo_store_updated', handleUpdate);
+    return () => window.removeEventListener('uo_store_updated', handleUpdate);
+  }, [slug]);
 
   if (!template) {
     notFound();
