@@ -1,13 +1,21 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAllTemplates } from '@/lib/store';
 import { TemplateDeviceMockup } from './TemplateDeviceMockup';
 import { DIY_PACKAGES } from '@/lib/data/catalog';
 
 export function TemplateGrid() {
-  const templates = getAllTemplates();
+  const [templates, setTemplates] = useState(() => getAllTemplates());
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setTemplates(getAllTemplates());
+    };
+    window.addEventListener('uo_store_updated', handleUpdate);
+    return () => window.removeEventListener('uo_store_updated', handleUpdate);
+  }, []);
 
   const essentialPkg = DIY_PACKAGES.find((p) => p.tier === 'essential');
   const essentialAllowedIds = essentialPkg?.allowedTemplateIds || ['aurelia-minimal', 'celine-editorial', 'clara-classic'];

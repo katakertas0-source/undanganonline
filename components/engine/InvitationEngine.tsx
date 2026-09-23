@@ -19,6 +19,7 @@ import { extractYouTubeId } from '@/lib/media';
 import { BalineseOrnamentalDivider } from '@/components/ui/BalineseOrnaments';
 import { GuestPassCard } from './GuestPassCard';
 import { DocumentationGallerySection } from './DocumentationGallerySection';
+import { BaliHeritageLuxuryTemplate } from './templates/BaliHeritageLuxuryTemplate';
 
 interface InvitationEngineProps {
   invitation: Invitation;
@@ -41,6 +42,24 @@ export function InvitationEngine({
   onOpenStateChange,
   activeSectionTarget,
 }: InvitationEngineProps) {
+  const template = getTemplateById(invitation.templateId);
+
+  // Dedicated Archetype Pipeline: Bali Heritage Luxury
+  if (template?.archetype === 'balinese-heritage-luxury' || invitation.templateId === 'bali-heritage') {
+    return (
+      <BaliHeritageLuxuryTemplate
+        invitation={invitation}
+        guestName={guestName}
+        isPreview={isPreview}
+        forceMobile={forceMobile}
+        initialOpen={initialOpen}
+        isOpenControlled={isOpenControlled}
+        onOpenStateChange={onOpenStateChange}
+        activeSectionTarget={activeSectionTarget}
+      />
+    );
+  }
+
   const isControlled = typeof isOpenControlled === 'boolean';
   const [internalIsOpen, setInternalIsOpen] = useState(initialOpen);
   const isOpen = isControlled ? isOpenControlled : internalIsOpen;
@@ -50,7 +69,6 @@ export function InvitationEngine({
     onOpenStateChange?.(open);
   };
 
-  const template = getTemplateById(invitation.templateId);
   const isDark = template?.theme.isDark || invitation.colorPreset === 'nocturne-black';
   const vis = invitation.sectionVisibility;
   const isVideoMotionTemplate = template?.archetype === 'cinematic-motion' || Boolean(invitation.coverVideoUrl);
@@ -72,20 +90,30 @@ export function InvitationEngine({
 
     if (isOpen && activeSectionTarget) {
       const targetMap: Record<string, string> = {
+        cover: 'section-cover',
         couple: 'section-couple',
         events: 'section-events',
         gallery: 'section-gallery',
         story: 'section-story',
+        video: 'section-video',
         gifts: 'section-gifts',
+        rsvp: 'section-rsvp',
       };
       const targetId = targetMap[activeSectionTarget];
       const timer = setTimeout(() => {
         const container = document.getElementById('device-viewport');
         if (targetId) {
+          if (targetId === 'section-cover') {
+            container?.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+          }
           const el = document.getElementById(targetId);
           if (el && container) {
-            const topOffset = el.offsetTop - 30;
-            container.scrollTo({ top: Math.max(0, topOffset), behavior: 'smooth' });
+            const containerRect = container.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            const scale = container.offsetHeight > 0 ? containerRect.height / container.offsetHeight : 1;
+            const relativeTop = (elRect.top - containerRect.top) / (scale || 1);
+            container.scrollTo({ top: Math.max(0, container.scrollTop + relativeTop - 50), behavior: 'smooth' });
             return;
           }
         }

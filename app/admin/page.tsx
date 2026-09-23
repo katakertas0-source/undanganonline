@@ -18,6 +18,8 @@ import {
   getAllTemplatesWithStatus,
   deleteTemplate,
   restoreTemplate,
+  updateTemplatePrice,
+  resetTemplatePrice,
 } from '@/lib/store';
 import { Invitation, Order, Template } from '@/types';
 import {
@@ -49,6 +51,9 @@ import {
   X,
   RotateCcw,
   LayoutTemplate,
+  Tag,
+  Coins,
+  Edit3,
 } from 'lucide-react';
 
 export default function AdminPortalPage() {
@@ -65,10 +70,13 @@ export default function AdminPortalPage() {
   const [statusChangeMessage, setStatusChangeMessage] = useState<string | null>(null);
 
   // Template Catalog Management States
-  const [templatesList, setTemplatesList] = useState<Array<Template & { isDeleted: boolean }>>([]);
+  const [templatesList, setTemplatesList] = useState<Array<Template & { isDeleted: boolean; isCustomPrice?: boolean; defaultBasePrice?: number }>>([]);
   const [searchTemplateQuery, setSearchTemplateQuery] = useState<string>('');
   const [filterTemplateStatus, setFilterTemplateStatus] = useState<'ALL' | 'ACTIVE' | 'DELETED'>('ALL');
-  const [templateToDelete, setTemplateToDelete] = useState<(Template & { isDeleted: boolean }) | null>(null);
+  const [templateToDelete, setTemplateToDelete] = useState<(Template & { isDeleted: boolean; isCustomPrice?: boolean; defaultBasePrice?: number }) | null>(null);
+  const [templateToEditPrice, setTemplateToEditPrice] = useState<(Template & { isDeleted: boolean; isCustomPrice?: boolean; defaultBasePrice?: number }) | null>(null);
+  const [editPriceInput, setEditPriceInput] = useState<number>(0);
+  const [priceSuccessMsg, setPriceSuccessMsg] = useState<string | null>(null);
 
   // Admin Authentication States
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -296,6 +304,41 @@ export default function AdminPortalPage() {
     setStatusChangeMessage(`Template "${tmpl.name}" berhasil dipulihkan ke katalog publik.`);
     setTimeout(() => setStatusChangeMessage(null), 3000);
     loadAdminData();
+  };
+
+  const handleOpenPriceModal = (tmpl: Template & { isDeleted: boolean; isCustomPrice?: boolean; defaultBasePrice?: number }) => {
+    setTemplateToEditPrice(tmpl);
+    setEditPriceInput(tmpl.basePrice);
+    setPriceSuccessMsg(null);
+  };
+
+  const handleSavePrice = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!templateToEditPrice) return;
+    const finalPrice = Math.max(0, Math.round(Number(editPriceInput) || 0));
+    updateTemplatePrice(templateToEditPrice.id, finalPrice);
+    setTemplatesList(getAllTemplatesWithStatus());
+    setPriceSuccessMsg(`Harga template "${templateToEditPrice.name}" berhasil diubah menjadi ${formatRupiah(finalPrice)}!`);
+    setTimeout(() => {
+      setTemplateToEditPrice(null);
+      setPriceSuccessMsg(null);
+    }, 1200);
+  };
+
+  const handleResetPrice = (tmpl: Template & { isDeleted: boolean; isCustomPrice?: boolean; defaultBasePrice?: number }) => {
+    resetTemplatePrice(tmpl.id);
+    setTemplatesList(getAllTemplatesWithStatus());
+    const defaultP = tmpl.defaultBasePrice || tmpl.basePrice;
+    setStatusChangeMessage(`Harga template "${tmpl.name}" berhasil dikembalikan ke bawaan (${formatRupiah(defaultP)}).`);
+    setTimeout(() => setStatusChangeMessage(null), 3000);
+    if (templateToEditPrice && templateToEditPrice.id === tmpl.id) {
+      setEditPriceInput(defaultP);
+      setPriceSuccessMsg(`Harga template "${tmpl.name}" direset ke bawaan (${formatRupiah(defaultP)})!`);
+      setTimeout(() => {
+        setTemplateToEditPrice(null);
+        setPriceSuccessMsg(null);
+      }, 1200);
+    }
   };
 
   // Filtered templates
@@ -1217,7 +1260,7 @@ export default function AdminPortalPage() {
 
                       {/* Content Info */}
                       <div className="p-5 space-y-3">
-                        <div className="flex items-baseline justify-between">
+                        <div className="flex items-start justify-between gap-2">
                           <div>
                             <h3 className="font-serif text-2xl uppercase tracking-wide text-neutral-900 font-normal">
                               {tmpl.name}
@@ -1226,9 +1269,36 @@ export default function AdminPortalPage() {
                               Slug: /{tmpl.slug}
                             </span>
                           </div>
-                          <span className="font-mono text-xs font-semibold text-neutral-900">
-                            {formatRupiah(tmpl.basePrice)}
-                          </span>
+                          <div className="text-right shrink-0">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <span className="font-mono text-xs font-bold text-neutral-900">
+                                {formatRupiah(tmpl.basePrice)}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenPriceModal(tmpl)}
+                                title="Ubah Harga Template"
+                                className="p-1 text-neutral-400 hover:text-black hover:bg-neutral-100 rounded transition-colors cursor-pointer"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            {tmpl.isCustomPrice && (
+                              <div className="flex items-center justify-end gap-1 mt-0.5">
+                                <span className="text-[8px] font-mono uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-2xs font-semibold">
+                                  Kustom
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleResetPrice(tmpl)}
+                                  title="Kembalikan ke harga bawaan"
+                                  className="text-[8px] text-neutral-400 hover:text-red-600 underline cursor-pointer"
+                                >
+                                  Reset
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         <p className="text-xs text-neutral-500 font-light line-clamp-2 leading-relaxed">
@@ -1252,15 +1322,26 @@ export default function AdminPortalPage() {
                     </div>
 
                     {/* Card Actions */}
-                    <div className="p-4 border-t border-neutral-100 bg-[#FAF9F6] flex items-center justify-between gap-2">
-                      <Link
-                        href={`/templates/${tmpl.slug}`}
-                        target="_blank"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-wider border border-neutral-300 hover:border-black bg-white text-neutral-700 hover:text-black transition-colors"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        <span>Live Preview</span>
-                      </Link>
+                    <div className="p-4 border-t border-neutral-100 bg-[#FAF9F6] flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/templates/${tmpl.slug}`}
+                          target="_blank"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-wider border border-neutral-300 hover:border-black bg-white text-neutral-700 hover:text-black transition-colors"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          <span>Live Preview</span>
+                        </Link>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenPriceModal(tmpl)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] uppercase tracking-wider border border-neutral-300 hover:border-black bg-white text-neutral-800 hover:text-black transition-colors cursor-pointer font-medium"
+                        >
+                          <Tag className="w-3 h-3 text-amber-600" />
+                          <span>Ubah Harga</span>
+                        </button>
+                      </div>
 
                       {tmpl.isDeleted ? (
                         <button
@@ -1276,7 +1357,7 @@ export default function AdminPortalPage() {
                           className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-[10px] uppercase tracking-wider bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-400 font-semibold transition-colors cursor-pointer rounded-sm"
                         >
                           <Trash2 className="w-3 h-3" />
-                          <span>Hapus Template</span>
+                          <span>Hapus</span>
                         </button>
                       )}
                     </div>
@@ -1488,6 +1569,130 @@ export default function AdminPortalPage() {
                 Ya, Hapus Template
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Template Price Modal */}
+      {templateToEditPrice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#181818] border border-neutral-800 p-6 sm:p-8 max-w-md w-full text-white shadow-2xl relative">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-neutral-800 mb-6">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#E5C378]">
+                <Tag className="w-4 h-4 text-[#E5C378]" />
+                <span>Ubah Harga Template</span>
+              </div>
+              <button
+                onClick={() => setTemplateToEditPrice(null)}
+                className="text-neutral-400 hover:text-white transition-colors p-1 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Template Summary Box */}
+            <div className="mb-5 p-4 bg-[#222222] border border-neutral-700/80 rounded-xs">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] uppercase tracking-widest text-neutral-400">Template Target:</span>
+                <span className="font-mono text-[10px] text-[#E5C378]">/{templateToEditPrice.slug}</span>
+              </div>
+              <h4 className="font-serif text-xl uppercase tracking-wide text-white font-medium">
+                {templateToEditPrice.name}
+              </h4>
+              <div className="mt-3 pt-2.5 border-t border-neutral-700 flex items-center justify-between text-xs">
+                <span className="text-neutral-400">Harga Bawaan Sistem:</span>
+                <span className="font-mono text-neutral-300">
+                  {formatRupiah(templateToEditPrice.defaultBasePrice || templateToEditPrice.basePrice)}
+                </span>
+              </div>
+            </div>
+
+            {priceSuccessMsg && (
+              <div className="mb-4 p-3 bg-emerald-950/60 border border-emerald-800 text-emerald-200 text-xs flex items-center gap-2 animate-fade-in">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{priceSuccessMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSavePrice} className="space-y-5">
+              <div>
+                <label className="block text-[10px] uppercase tracking-widest text-neutral-400 mb-1.5">
+                  Nominal Harga Baru (Rupiah)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-2.5 text-xs font-mono text-[#E5C378] font-semibold">
+                    Rp
+                  </span>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="1000"
+                    value={editPriceInput}
+                    onChange={(e) => setEditPriceInput(Number(e.target.value))}
+                    className="w-full pl-12 pr-4 py-2.5 bg-[#252525] border border-neutral-700 text-white text-sm font-mono focus:border-[#E5C378] focus:outline-none transition-colors"
+                  />
+                </div>
+                <p className="text-[10px] font-mono text-neutral-400 mt-1">
+                  Format tampil: {formatRupiah(editPriceInput)}
+                </p>
+              </div>
+
+              {/* Quick Preset Buttons */}
+              <div>
+                <span className="block text-[10px] uppercase tracking-widest text-neutral-400 mb-2">
+                  Pilihan Cepat Harga Paket:
+                </span>
+                <div className="grid grid-cols-3 gap-2">
+                  {[99000, 149000, 199000, 249000, 299000, 399000].map((quickPrice) => (
+                    <button
+                      key={quickPrice}
+                      type="button"
+                      onClick={() => setEditPriceInput(quickPrice)}
+                      className={`py-1.5 px-2 text-[10px] font-mono border text-center transition-colors cursor-pointer ${
+                        editPriceInput === quickPrice
+                          ? 'bg-[#E5C378] text-black border-[#E5C378] font-bold shadow-sm'
+                          : 'bg-[#252525] hover:bg-[#303030] text-neutral-300 border-neutral-700'
+                      }`}
+                    >
+                      {formatRupiah(quickPrice)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
+                {templateToEditPrice.isCustomPrice ? (
+                  <button
+                    type="button"
+                    onClick={() => handleResetPrice(templateToEditPrice)}
+                    className="text-xs text-red-400 hover:text-red-300 underline font-medium cursor-pointer"
+                  >
+                    Reset ke Bawaan
+                  </button>
+                ) : (
+                  <span />
+                )}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTemplateToEditPrice(null)}
+                    className="px-4 py-2 text-xs uppercase tracking-wider text-neutral-400 hover:text-white border border-neutral-700 transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 text-xs uppercase tracking-wider bg-[#E5C378] hover:bg-[#d8b566] text-black font-semibold transition-colors cursor-pointer shadow-md"
+                  >
+                    Simpan Harga
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}

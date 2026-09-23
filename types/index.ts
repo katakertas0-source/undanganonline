@@ -18,7 +18,8 @@ export type TemplateArchetype =
   | 'japanese-minimal'
   | 'mediterranean-summer'
   | 'cinematic-motion'
-  | 'balinese-heritage';
+  | 'balinese-heritage'
+  | 'balinese-heritage-luxury';
 
 export interface DemoCoupleMeta {
   groomName: string;

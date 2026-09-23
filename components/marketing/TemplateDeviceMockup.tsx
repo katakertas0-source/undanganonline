@@ -9,6 +9,7 @@ import {
   BalineseKoriAgungCrest,
   BalineseCandiBentarFrame,
 } from '@/components/ui/BalineseOrnaments';
+import { BalineseStarOrnament } from '@/components/ui/BalineseStarOrnament';
 
 interface TemplateDeviceMockupProps {
   template: Template;
@@ -366,6 +367,57 @@ export function TemplateDeviceMockup({
       );
     }
 
+    // 7. Bali Heritage Luxury (BALI HERITAGE LUXURY) - Dark Editorial & Star Ornament
+    if (archetype === 'balinese-heritage-luxury') {
+      return (
+        <div className="px-2 pt-4 sm:pt-5 pb-2 sm:pb-2.5 flex flex-col justify-between h-[calc(100%-24px)] text-center bg-[#0D0C0A] text-[#F3EEE5] relative overflow-hidden">
+          {/* Full Cover Image with Radiant Couple Clarity & Targeted Bottom Vignette */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src={template.coverImageUrl}
+              alt={template.name}
+              className="w-full h-full object-cover object-top"
+            />
+            {/* Soft subtle top vignette only behind status & Om Swastyastu */}
+            <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-[#0D0C0A]/80 via-[#0D0C0A]/30 to-transparent pointer-events-none" />
+            {/* Targeted bottom vignette: slightly raised so text is perfectly legible while faces remain bright */}
+            <div className="absolute inset-x-0 bottom-0 h-[48%] bg-gradient-to-t from-[#0D0C0A] via-[#0D0C0A]/90 via-45% to-transparent pointer-events-none" />
+          </div>
+
+          {/* Top Header */}
+          <div className="pt-1 relative z-10 flex flex-col items-center shrink-0">
+            <BalineseStarOrnament className="w-3.5 h-3.5 mb-0.5 text-[#B89A5A]" />
+            <div className="text-[5.5px] uppercase tracking-[0.22em] text-[#D6C29A] font-medium">
+              OM SWASTYASTU
+            </div>
+          </div>
+
+          {/* Middle Spacer */}
+          <div className="flex-1 w-full" />
+
+          {/* Bottom Block */}
+          <div className="space-y-0.5 relative z-10 pb-1 flex flex-col items-center shrink-0">
+            <p className="text-[5.5px] uppercase tracking-[0.25em] text-[#D6C29A] font-serif drop-shadow-sm">
+              PAWIWAHAN
+            </p>
+            <h4 className="font-serif font-normal text-[11px] uppercase tracking-wider text-[#F3EEE5] line-clamp-1 drop-shadow-sm">
+              {demo.groomNickname} <span className="italic font-light text-[#D6C29A]">&amp;</span> {demo.brideNickname}
+            </h4>
+            <p className="text-[5.5px] tracking-[0.18em] text-[#D6C29A] font-mono drop-shadow-sm">
+              {demo.dateStr}
+            </p>
+            <p className="font-serif italic text-[5.5px] text-[#F3EEE5]/80 line-clamp-1 px-1 pt-0.5">
+              &ldquo;{demo.quote}&rdquo;
+            </p>
+            <div className="mt-1 inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[5.5px] uppercase tracking-widest bg-[#0D0C0A]/90 border border-[#B89A5A] text-[#F3EEE5] shadow-md">
+              <span>Buka Undangan</span>
+              <span className="text-[5px]">→</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // 7. Default / Editorial Garden (AURELIA) - Botanical Symmetry
     return (
       <div className="px-2.5 sm:px-3 pt-3 sm:pt-3.5 pb-2 sm:pb-3 flex flex-col justify-between h-[calc(100%-24px)] text-center bg-[#F8F7F3] text-[#1F1C1D]">
@@ -530,6 +582,39 @@ export function TemplateDeviceMockup({
             <p className="text-[6.5px] uppercase tracking-widest text-[#8C4830] font-sans font-medium">
               DUDONAN ACARA PAWIWAHAN
             </p>
+          </div>
+        </div>
+      );
+    }
+
+    // Bali Heritage Luxury: Ivory Editorial Interior Peek
+    if (archetype === 'balinese-heritage-luxury') {
+      return (
+        <div className="relative flex-1 overflow-hidden mt-1 bg-[#F3EEE5] text-[#2B241E] flex flex-col justify-between p-2.5">
+          <div className="text-center pt-1 z-10">
+            <p className="text-[6.5px] uppercase tracking-[0.22em] text-[#2B241E] font-serif font-medium">
+              TENTANG KAMI
+            </p>
+            <p className="font-serif italic text-[7.5px] text-[#8C6D38] mt-0.5">
+              Dua Jiwa, Satu Tujuan
+            </p>
+          </div>
+          <div className="relative mx-auto w-full max-w-[130px] aspect-[3/4] rounded-sm overflow-hidden border border-[#2B241E]/10 shadow-md">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={secondaryImage}
+              alt="Bali Heritage Interior"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#2B241E]/50 via-transparent to-transparent" />
+            <div className="absolute bottom-1 inset-x-0 text-center">
+              <span className="text-[6.5px] font-serif italic text-white/90">
+                Pawiwahan · 24 . 10 . 2026
+              </span>
+            </div>
+          </div>
+          <div className="text-center z-10 pb-0.5 flex flex-col items-center">
+            <BalineseStarOrnament className="w-3.5 h-3.5 text-[#B89A5A]" />
           </div>
         </div>
       );

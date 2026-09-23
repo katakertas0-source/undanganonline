@@ -91,6 +91,7 @@ export default function BuilderPage() {
     'design' | 'couple' | 'events' | 'sections' | 'gallery' | 'story' | 'gifts' | 'addons'
   >('design');
   const [previewSection, setPreviewSection] = useState<'cover' | 'inside'>('cover');
+  const [addonScrollTarget, setAddonScrollTarget] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState<'mobile' | 'desktop'>('mobile');
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving'>('saved');
@@ -118,6 +119,7 @@ export default function BuilderPage() {
 
   const handleTabChange = (tab: 'design' | 'couple' | 'events' | 'sections' | 'gallery' | 'story' | 'gifts' | 'addons') => {
     setActiveTab(tab);
+    setAddonScrollTarget(null);
     if (tab === 'design') {
       setPreviewSection('cover');
     } else {
@@ -252,6 +254,8 @@ export default function BuilderPage() {
   const templates = getAllTemplates();
   const addons = getAllAddons();
   const currentTemplate = templates.find((t) => t.id === invitation.templateId) || templates[0];
+  const isBaliHeritage = currentTemplate.id === 'bali-heritage' || currentTemplate.archetype === 'balinese-heritage-luxury';
+  const isMahadewi = currentTemplate.id === 'mahadewi-bali' || currentTemplate.archetype === 'balinese-heritage';
 
   const updateInvitationState = (updated: Invitation) => {
     setInvitation(updated);
@@ -609,6 +613,7 @@ export default function BuilderPage() {
                       const isCinema = newTmpl?.archetype === 'dark-luxury-cinema' || newTmpl?.archetype === 'romantic-cinema';
                       const isMotion = newTmpl?.archetype === 'cinematic-motion';
                       const isMahadewi = newTmpl.id === 'mahadewi-bali';
+                      const isBaliHeritage = newTmpl.id === 'bali-heritage';
 
                       // Synchronize addons with package tier
                       const updatedAddons = targetPkgId === 'pkg-premium'
@@ -623,16 +628,30 @@ export default function BuilderPage() {
                         templateId: e.target.value,
                         activeAddonIds: updatedAddons,
                         coverImageUrl: newTmpl.coverImageUrl,
-                        coverTitle: isMahadewi ? 'PAWIWAHAN AGUNG · BALINESE HERITAGE' : invitation.coverTitle,
+                        coverTitle: isBaliHeritage ? 'PAWIWAHAN' : isMahadewi ? 'PAWIWAHAN AGUNG · BALINESE HERITAGE' : invitation.coverTitle,
                         colorPreset: newTmpl?.theme.isDark ? 'nocturne-black' : (isMahadewi ? 'warm-linen' : 'offwhite-noir'),
-                        layoutPreset: isMahadewi ? 'framed-portrait' : invitation.layoutPreset,
-                        openingQuote: isMahadewi && (!invitation.openingQuote || invitation.openingQuote.includes('celebration of love'))
+                        layoutPreset: isBaliHeritage || isMahadewi ? 'framed-portrait' : invitation.layoutPreset,
+                        openingQuote: isBaliHeritage && (!invitation.openingQuote || invitation.openingQuote.includes('celebration of love'))
+                          ? 'Kami dipertemukan oleh waktu, dipersatukan oleh cinta, dan akan melangkah bersama dalam ikatan suci Pawiwahan.'
+                          : isMahadewi && (!invitation.openingQuote || invitation.openingQuote.includes('celebration of love'))
                           ? 'Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud menyelenggarakan Upacara Manusa Yadnya Pawiwahan putra-putri kami.'
                           : invitation.openingQuote,
-                        holyVerse: isMahadewi && (!invitation.holyVerse || invitation.holyVerse.includes('Two lives'))
+                        holyVerse: isBaliHeritage && (!invitation.holyVerse || invitation.holyVerse.includes('Two lives'))
+                          ? 'Dua Hati, Satu Perjalanan, Dalam Restu Semesta.'
+                          : isMahadewi && (!invitation.holyVerse || invitation.holyVerse.includes('Two lives'))
                           ? 'Ihaiva stam ma vi yaustam visvam ayur vyasnutam kridantau putrair naptrbhih modamanau sve grhe. (Rg Veda X.85.42) — Wahai pasangan pengantin, semoga senantiasa bersatu dalam cinta kasih dan damai abadi.'
                           : invitation.holyVerse,
-                        couple: isMahadewi && (invitation.couple.groomPhotoUrl.includes('unsplash') || invitation.couple.groomName === 'Julian Pratama')
+                        couple: isBaliHeritage && (invitation.couple.groomPhotoUrl.includes('unsplash') || invitation.couple.groomName === 'Julian Pratama')
+                          ? {
+                              ...invitation.couple,
+                              groomName: 'I Putu Wira Yasa, S.T.',
+                              groomNickname: 'Putu',
+                              groomPhotoUrl: '/images/bali-heritage-cover.jpg',
+                              brideName: 'Ni Kadek Sinta Dewi, B.Des',
+                              brideNickname: 'Sinta',
+                              bridePhotoUrl: '/images/bali-heritage-secondary.jpg',
+                            }
+                          : isMahadewi && (invitation.couple.groomPhotoUrl.includes('unsplash') || invitation.couple.groomName === 'Julian Pratama')
                           ? {
                               ...invitation.couple,
                               groomPhotoUrl: '/images/rama-portrait.jpg',
@@ -715,15 +734,24 @@ export default function BuilderPage() {
                     </label>
                     <button
                       type="button"
-                      onClick={() => updateInvitationState({ ...invitation, coverTitle: 'THE WEDDING CELEBRATION' })}
-                      className="text-[10px] text-[#8C6D3B] hover:text-[#2A2522] underline underline-offset-2"
+                      onClick={() =>
+                        updateInvitationState({
+                          ...invitation,
+                          coverTitle: isBaliHeritage
+                            ? 'PAWIWAHAN'
+                            : isMahadewi
+                            ? 'PAWIWAHAN AGUNG · BALINESE HERITAGE'
+                            : 'THE WEDDING CELEBRATION',
+                        })
+                      }
+                      className="text-[10px] text-[#8C6D3B] hover:text-[#2A2522] underline underline-offset-2 cursor-pointer"
                     >
                       Reset Default
                     </button>
                   </div>
                   <input
                     type="text"
-                    value={invitation.coverTitle ?? 'THE WEDDING CELEBRATION'}
+                    value={invitation.coverTitle ?? (isBaliHeritage ? 'PAWIWAHAN' : 'THE WEDDING CELEBRATION')}
                     onChange={(e) => updateInvitationState({ ...invitation, coverTitle: e.target.value })}
                     className="w-full px-3 py-2 text-xs bg-white border border-[#DCD6CC] text-[#2A2522] uppercase tracking-wider outline-none focus:border-[#8C6D3B] font-medium"
                     placeholder="Contoh: THE WEDDING CELEBRATION, WALIMATUL 'URS, dll."
@@ -735,6 +763,7 @@ export default function BuilderPage() {
                     </span>
                     <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                       {[
+                        ...(isBaliHeritage || isMahadewi ? ['PAWIWAHAN', 'PAWIWAHAN AGUNG'] : []),
                         'THE WEDDING CELEBRATION',
                         'THE WEDDING OF',
                         'WALIMATUL \'URS',
@@ -742,13 +771,13 @@ export default function BuilderPage() {
                         'PERAYAAN PERNIKAHAN',
                         'THE SACRED UNION',
                       ].map((t) => {
-                        const isCurrent = (invitation.coverTitle || 'THE WEDDING CELEBRATION') === t;
+                        const isCurrent = (invitation.coverTitle || (isBaliHeritage ? 'PAWIWAHAN' : 'THE WEDDING CELEBRATION')) === t;
                         return (
                           <button
                             key={t}
                             type="button"
                             onClick={() => updateInvitationState({ ...invitation, coverTitle: t })}
-                            className={`px-2.5 py-1 text-[10px] border whitespace-nowrap transition-colors rounded-sm ${
+                            className={`px-2.5 py-1 text-[10px] border whitespace-nowrap transition-colors rounded-sm cursor-pointer ${
                               isCurrent
                                 ? 'bg-[#2A2522] text-white border-[#2A2522] font-semibold'
                                 : 'bg-white border-[#DDD5C7] text-[#5C554E] hover:border-[#A8A196]'
@@ -1557,7 +1586,7 @@ export default function BuilderPage() {
                           <Tag className="w-3.5 h-3.5 text-[#8C6D3B]" />
                           <span>Badge Label Foto Pria (Opsional)</span>
                         </label>
-                        {(invitation.couple.groomLabelBadge !== undefined ? invitation.couple.groomLabelBadge : (invitation.templateId === 'mahadewi-bali' ? 'Sang Purusha' : '')) && (
+                        {(invitation.couple.groomLabelBadge !== undefined ? invitation.couple.groomLabelBadge : (['mahadewi-bali', 'bali-heritage'].includes(invitation.templateId) ? 'Sang Purusha' : '')) && (
                           <button
                             type="button"
                             onClick={() =>
@@ -1577,7 +1606,7 @@ export default function BuilderPage() {
                         value={
                           invitation.couple.groomLabelBadge !== undefined
                             ? invitation.couple.groomLabelBadge
-                            : (invitation.templateId === 'mahadewi-bali' ? 'Sang Purusha' : '')
+                            : (['mahadewi-bali', 'bali-heritage'].includes(invitation.templateId) ? 'Sang Purusha' : '')
                         }
                         onChange={(e) =>
                           updateInvitationState({
@@ -1805,7 +1834,7 @@ export default function BuilderPage() {
                           <Tag className="w-3.5 h-3.5 text-[#8C6D3B]" />
                           <span>Badge Label Foto Wanita (Opsional)</span>
                         </label>
-                        {(invitation.couple.brideLabelBadge !== undefined ? invitation.couple.brideLabelBadge : (invitation.templateId === 'mahadewi-bali' ? 'Sang Pradana' : '')) && (
+                        {(invitation.couple.brideLabelBadge !== undefined ? invitation.couple.brideLabelBadge : (['mahadewi-bali', 'bali-heritage'].includes(invitation.templateId) ? 'Sang Pradana' : '')) && (
                           <button
                             type="button"
                             onClick={() =>
@@ -1825,7 +1854,7 @@ export default function BuilderPage() {
                         value={
                           invitation.couple.brideLabelBadge !== undefined
                             ? invitation.couple.brideLabelBadge
-                            : (invitation.templateId === 'mahadewi-bali' ? 'Sang Pradana' : '')
+                            : (['mahadewi-bali', 'bali-heritage'].includes(invitation.templateId) ? 'Sang Pradana' : '')
                         }
                         onChange={(e) =>
                           updateInvitationState({
@@ -2815,6 +2844,8 @@ export default function BuilderPage() {
                                 updatedVisibility.story = !isSelected;
                               } else if (addon.id === 'rsvp-system') {
                                 updatedVisibility.rsvp = !isSelected;
+                              } else if (addon.id === 'extra-gallery') {
+                                updatedVisibility.gallery = true;
                               }
 
                               let newCoverVideoUrl = invitation.coverVideoUrl;
@@ -2824,6 +2855,27 @@ export default function BuilderPage() {
                                 } else {
                                   if (currentTemplate.archetype !== 'cinematic-motion') {
                                     newCoverVideoUrl = undefined;
+                                  }
+                                }
+                              }
+
+                              // Auto-scroll preview to the corresponding section when activating
+                              if (!isSelected) {
+                                const addonTargetMap: Record<string, string> = {
+                                  'living-video-bg': 'cover',
+                                  'love-story': 'story',
+                                  'video-prewedding': 'video',
+                                  'extra-gallery': 'gallery',
+                                  'rsvp-system': 'rsvp',
+                                };
+                                const target = addonTargetMap[addon.id];
+                                if (target) {
+                                  if (target === 'cover') {
+                                    setPreviewSection('cover');
+                                    setAddonScrollTarget('cover');
+                                  } else {
+                                    setPreviewSection('inside');
+                                    setAddonScrollTarget(target);
                                   }
                                 }
                               }
@@ -2988,7 +3040,7 @@ export default function BuilderPage() {
                 forceMobile={true}
                 isOpenControlled={previewSection === 'inside'}
                 onOpenStateChange={(open) => setPreviewSection(open ? 'inside' : 'cover')}
-                activeSectionTarget={activeTab}
+                activeSectionTarget={addonScrollTarget || activeTab}
               />
             </div>
           </div>
@@ -3006,7 +3058,7 @@ export default function BuilderPage() {
                     forceMobile={true}
                     isOpenControlled={previewSection === 'inside'}
                     onOpenStateChange={(open) => setPreviewSection(open ? 'inside' : 'cover')}
-                    activeSectionTarget={activeTab}
+                    activeSectionTarget={addonScrollTarget || activeTab}
                   />
                 </DeviceFrame>
               ) : (
@@ -3023,7 +3075,7 @@ export default function BuilderPage() {
                     forceMobile={false}
                     isOpenControlled={previewSection === 'inside'}
                     onOpenStateChange={(open) => setPreviewSection(open ? 'inside' : 'cover')}
-                    activeSectionTarget={activeTab}
+                    activeSectionTarget={addonScrollTarget || activeTab}
                   />
                 </div>
               )}

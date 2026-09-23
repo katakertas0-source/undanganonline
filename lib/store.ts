@@ -21,6 +21,7 @@ const STORAGE_KEYS = {
   INVITATIONS: 'uo_invitations',
   DELETED_INVITATIONS: 'uo_deleted_invitation_ids',
   DELETED_TEMPLATES: 'uo_deleted_template_ids',
+  TEMPLATE_PRICES: 'uo_template_custom_prices',
   ORDERS: 'uo_orders',
   GUESTS: 'uo_guests',
   RSVPS: 'uo_rsvps',
@@ -29,11 +30,18 @@ const STORAGE_KEYS = {
 
 const memoryFallback: Record<string, any> = {};
 
-// Background hydration from IndexedDB for large media assets (photos, audio)
+// Background hydration from IndexedDB for large media assets (photos, audio) & settings
 if (typeof window !== 'undefined') {
   idbGet<Invitation[]>(STORAGE_KEYS.INVITATIONS).then((idbList) => {
     if (idbList && Array.isArray(idbList) && idbList.length > 0) {
       memoryFallback[STORAGE_KEYS.INVITATIONS] = idbList;
+      window.dispatchEvent(new Event('uo_store_updated'));
+    }
+  }).catch(() => {});
+
+  idbGet<Record<string, number>>(STORAGE_KEYS.TEMPLATE_PRICES).then((prices) => {
+    if (prices && typeof prices === 'object' && Object.keys(prices).length > 0) {
+      memoryFallback[STORAGE_KEYS.TEMPLATE_PRICES] = prices;
       window.dispatchEvent(new Event('uo_store_updated'));
     }
   }).catch(() => {});
@@ -138,17 +146,66 @@ function safeSetStorage<T>(key: string, value: T): void {
   }
 }
 
-export function getAllTemplates(): Template[] {
-  const deletedTemplateIds = safeGetStorage<string[]>(STORAGE_KEYS.DELETED_TEMPLATES, []);
-  return TEMPLATES.filter((t) => !deletedTemplateIds.includes(t.id) && !deletedTemplateIds.includes(t.slug));
+export function getCustomTemplatePrices(): Record<string, number> {
+  return safeGetStorage<Record<string, number>>(STORAGE_KEYS.TEMPLATE_PRICES, {});
 }
 
-export function getAllTemplatesWithStatus(): Array<Template & { isDeleted: boolean }> {
+export function getAllTemplates(): Template[] {
   const deletedTemplateIds = safeGetStorage<string[]>(STORAGE_KEYS.DELETED_TEMPLATES, []);
-  return TEMPLATES.map((t) => ({
-    ...t,
-    isDeleted: deletedTemplateIds.includes(t.id) || deletedTemplateIds.includes(t.slug),
-  }));
+  const customPrices = getCustomTemplatePrices();
+  return TEMPLATES.filter((t) => !deletedTemplateIds.includes(t.id) && !deletedTemplateIds.includes(t.slug)).map((t) => {
+    const custom = customPrices[t.id] ?? customPrices[t.slug];
+    return custom !== undefined ? { ...t, basePrice: custom } : t;
+  });
+}
+
+export function getAllTemplatesWithStatus(): Array<Template & { isDeleted: boolean; isCustomPrice?: boolean; defaultBasePrice?: number }> {
+  const deletedTemplateIds = safeGetStorage<string[]>(STORAGE_KEYS.DELETED_TEMPLATES, []);
+  const customPrices = getCustomTemplatePrices();
+  return TEMPLATES.map((t) => {
+    const custom = customPrices[t.id] ?? customPrices[t.slug];
+    const isCustomPrice = custom !== undefined;
+    const effectivePrice = custom !== undefined ? custom : t.basePrice;
+    return {
+      ...t,
+      basePrice: effectivePrice,
+      defaultBasePrice: t.basePrice,
+      isCustomPrice,
+      isDeleted: deletedTemplateIds.includes(t.id) || deletedTemplateIds.includes(t.slug),
+    };
+  });
+}
+
+export function updateTemplatePrice(idOrSlug: string, newPrice: number): void {
+  const prices = { ...getCustomTemplatePrices() };
+  const target = TEMPLATES.find((t) => t.id === idOrSlug || t.slug === idOrSlug);
+  const targetId = target ? target.id : idOrSlug;
+  const targetSlug = target ? target.slug : idOrSlug;
+
+  const validPrice = Math.max(0, Math.round(Number(newPrice) || 0));
+  prices[targetId] = validPrice;
+  prices[targetSlug] = validPrice;
+
+  safeSetStorage(STORAGE_KEYS.TEMPLATE_PRICES, prices);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('uo_store_updated'));
+  }
+}
+
+export function resetTemplatePrice(idOrSlug: string): void {
+  const prices = { ...getCustomTemplatePrices() };
+  const target = TEMPLATES.find((t) => t.id === idOrSlug || t.slug === idOrSlug);
+  const targetId = target ? target.id : idOrSlug;
+  const targetSlug = target ? target.slug : idOrSlug;
+
+  delete prices[targetId];
+  delete prices[targetSlug];
+  delete prices[idOrSlug];
+
+  safeSetStorage(STORAGE_KEYS.TEMPLATE_PRICES, prices);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('uo_store_updated'));
+  }
 }
 
 export function deleteTemplate(idOrSlug: string): void {
@@ -182,7 +239,11 @@ export function restoreTemplate(idOrSlug: string): void {
 export function getTemplateById(id: string): Template | undefined {
   const active = getAllTemplates().find((t) => t.id === id || t.slug === id);
   if (active) return active;
-  return TEMPLATES.find((t) => t.id === id || t.slug === id);
+  const original = TEMPLATES.find((t) => t.id === id || t.slug === id);
+  if (!original) return undefined;
+  const customPrices = getCustomTemplatePrices();
+  const custom = customPrices[original.id] ?? customPrices[original.slug];
+  return custom !== undefined ? { ...original, basePrice: custom } : original;
 }
 
 export function getAllPackages(): DiyPackage[] {
@@ -233,7 +294,7 @@ export function getAllInvitations(): Invitation[] {
     if (existingIdx === -1) {
       merged.push(init);
     } else {
-      if (['inv-julian-nadia', 'inv-celine', 'inv-nocturne', 'inv-maya-adrian', 'inv-clara', 'inv-sora', 'inv-roma', 'inv-elodie', 'inv-mahadewi-bali'].includes(merged[existingIdx].id)) {
+      if (['inv-julian-nadia', 'inv-celine', 'inv-nocturne', 'inv-maya-adrian', 'inv-clara', 'inv-sora', 'inv-roma', 'inv-elodie', 'inv-mahadewi-bali', 'inv-bali-heritage'].includes(merged[existingIdx].id)) {
         merged[existingIdx] = {
           ...merged[existingIdx],
           ...init,
@@ -496,30 +557,54 @@ export function createDraftInvitation(
     : ['music-backsound'];
 
   const isMahadewi = template.id === 'mahadewi-bali';
+  const isBaliHeritage = template.id === 'bali-heritage';
 
   const newInvitation: Invitation = {
     id,
     userId: 'user-default-1',
-    title: isMahadewi ? 'Pawiwahan Agung Rama & Gayatri' : 'The Wedding Celebration',
+    title: isBaliHeritage ? 'Pawiwahan Putu & Sinta' : isMahadewi ? 'Pawiwahan Agung Rama & Gayatri' : 'The Wedding Celebration',
     slug,
     serviceType,
     status: 'DRAFT',
     packageId: pkg.id,
     templateId: template.id,
     fontPreset: 'editorial-cormorant',
-    colorPreset: isMahadewi ? 'warm-linen' : template.theme.isDark ? 'nocturne-black' : 'offwhite-noir',
-    layoutPreset: isMahadewi ? 'framed-portrait' : 'split-editorial',
+    colorPreset: isBaliHeritage ? 'nocturne-black' : isMahadewi ? 'warm-linen' : template.theme.isDark ? 'nocturne-black' : 'offwhite-noir',
+    layoutPreset: isBaliHeritage ? 'framed-portrait' : isMahadewi ? 'framed-portrait' : 'split-editorial',
     animationPreset: 'curtain-reveal',
     coverImageUrl: template.coverImageUrl,
-    coverTitle: isMahadewi ? 'PAWIWAHAN AGUNG · BALINESE HERITAGE' : undefined,
-    openingQuote: isMahadewi
+    coverTitle: isBaliHeritage ? 'PAWIWAHAN' : isMahadewi ? 'PAWIWAHAN AGUNG · BALINESE HERITAGE' : undefined,
+    openingQuote: isBaliHeritage
+      ? 'Kami dipertemukan oleh waktu, dipersatukan oleh cinta, dan akan melangkah bersama dalam ikatan suci Pawiwahan.'
+      : isMahadewi
       ? 'Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud menyelenggarakan Upacara Manusa Yadnya Pawiwahan putra-putri kami.'
       : 'A celebration of love, commitment, and new beginnings.',
-    holyVerse: isMahadewi
+    holyVerse: isBaliHeritage
+      ? 'Dua Hati, Satu Perjalanan, Dalam Restu Semesta.'
+      : isMahadewi
       ? 'Ihaiva stam ma vi yaustam visvam ayur vyasnutam kridantau putrair naptrbhih modamanau sve grhe. (Rg Veda X.85.42) — Wahai pasangan pengantin, semoga senantiasa bersatu dalam cinta kasih dan damai abadi.'
       : 'Two lives, two hearts, joined together in friendship, united forever in love.',
-    eventDate: isMahadewi ? '2026-12-18' : '2026-11-20',
-    couple: isMahadewi
+    eventDate: isBaliHeritage ? '2026-10-24' : isMahadewi ? '2026-12-18' : '2026-11-20',
+    couple: isBaliHeritage
+      ? {
+          groomName: 'I Putu Wira Yasa, S.T.',
+          groomNickname: 'Putu',
+          groomFather: 'I Made Wira Wardana',
+          groomMother: 'Ni Ketut Suartini',
+          groomBio: 'Putra pertama dari Banjar Kaja, Denpasar.',
+          groomPhotoUrl: '/images/bali-heritage-cover.jpg',
+          groomInstagram: '@putrawira',
+          groomLabelBadge: 'Sang Purusha',
+          brideName: 'Ni Kadek Sinta Dewi, B.Des',
+          brideNickname: 'Sinta',
+          brideFather: 'I Wayan Sinta Guna',
+          brideMother: 'Ni Made Sukarni',
+          brideBio: 'Putri kedua dari Banjar Kangin, Ubud.',
+          bridePhotoUrl: '/images/bali-heritage-secondary.jpg',
+          brideInstagram: '@sintadewi',
+          brideLabelBadge: 'Sang Pradana',
+        }
+      : isMahadewi
       ? {
           groomName: 'Ida Bagus Rama Putra, S.T.',
           groomNickname: 'Rama',
@@ -554,7 +639,58 @@ export function createDraftInvitation(
           bridePhotoUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800&auto=format&fit=crop',
           brideLabelBadge: '',
         },
-    events: isMahadewi
+    events: isBaliHeritage
+      ? [
+          {
+            id: 'event-1',
+            name: 'Melaspas',
+            date: '2026-10-24',
+            startTime: '08:00',
+            endTime: '10:00',
+            timezone: 'WITA',
+            venueName: 'The Apurva Kempinski Bali',
+            address: 'Jl. Raya Nusa Dua Selatan, Sawangan, Nusa Dua, Bali',
+            googleMapsUrl: 'https://maps.google.com/?q=The+Apurva+Kempinski+Bali',
+            orderIndex: 0,
+          },
+          {
+            id: 'event-2',
+            name: 'Mepamit',
+            date: '2026-10-24',
+            startTime: '10:00',
+            endTime: '12:00',
+            timezone: 'WITA',
+            venueName: 'The Apurva Kempinski Bali',
+            address: 'Jl. Raya Nusa Dua Selatan, Sawangan, Nusa Dua, Bali',
+            googleMapsUrl: 'https://maps.google.com/?q=The+Apurva+Kempinski+Bali',
+            orderIndex: 1,
+          },
+          {
+            id: 'event-3',
+            name: 'Pawiwahan',
+            date: '2026-10-24',
+            startTime: '13:00',
+            endTime: '16:00',
+            timezone: 'WITA',
+            venueName: 'The Apurva Kempinski Bali',
+            address: 'Jl. Raya Nusa Dua Selatan, Sawangan, Nusa Dua, Bali',
+            googleMapsUrl: 'https://maps.google.com/?q=The+Apurva+Kempinski+Bali',
+            orderIndex: 2,
+          },
+          {
+            id: 'event-4',
+            name: 'Resepsi',
+            date: '2026-10-24',
+            startTime: '18:00',
+            endTime: '22:00',
+            timezone: 'WITA',
+            venueName: 'The Apurva Kempinski Bali',
+            address: 'Jl. Raya Nusa Dua Selatan, Sawangan, Nusa Dua, Bali',
+            googleMapsUrl: 'https://maps.google.com/?q=The+Apurva+Kempinski+Bali',
+            orderIndex: 3,
+          },
+        ]
+      : isMahadewi
       ? [
           {
             id: 'event-1',
@@ -719,7 +855,7 @@ export function calculateOrderPricing(
 
   const pkg = getPackageById(packageId);
   const template = getTemplateById(templateId) || TEMPLATES[0];
-  const basePrice = pkg.price;
+  const basePrice = template?.basePrice !== undefined ? template.basePrice : pkg.price;
 
   const isIncludedAddon = (addonId: string) => {
     if (addonId === 'living-video-bg' && template.archetype === 'cinematic-motion') {
