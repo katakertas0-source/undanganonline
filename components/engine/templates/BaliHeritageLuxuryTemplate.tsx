@@ -51,58 +51,81 @@ function Reveal({ children, delay = 0, yOffset = 20, className = '' }: RevealPro
       el.closest('[data-device-viewport]') ||
       null;
 
-    // Quick check: If element is already in viewport or container on mount, reveal right away
-    if (container) {
-      const containerRect = container.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      if (
-        elRect.top < containerRect.bottom + 60 &&
-        elRect.bottom > containerRect.top - 60
-      ) {
-        setIsVisible(true);
-        return;
+    const checkVisibility = () => {
+      if (!el) return false;
+      if (container) {
+        const cRect = container.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        // Element is visible if its top is above container bottom + 60px and bottom below container top - 60px
+        if (elRect.top <= cRect.bottom + 60 && elRect.bottom >= cRect.top - 60) {
+          setIsVisible(true);
+          return true;
+        }
+      } else if (typeof window !== 'undefined') {
+        const elRect = el.getBoundingClientRect();
+        if (elRect.top <= window.innerHeight + 60 && elRect.bottom >= -60) {
+          setIsVisible(true);
+          return true;
+        }
       }
-    } else if (typeof window !== 'undefined') {
-      const elRect = el.getBoundingClientRect();
-      if (elRect.top < window.innerHeight + 60 && elRect.bottom > -60) {
-        setIsVisible(true);
-        return;
+      return false;
+    };
+
+    // Immediate check on mount
+    if (checkVisibility()) {
+      return;
+    }
+
+    // Passive scroll listener (fires instantaneously when user or script scrolls)
+    const scrollTarget = container || (typeof window !== 'undefined' ? window : null);
+    const handleScroll = () => {
+      if (checkVisibility() && scrollTarget) {
+        scrollTarget.removeEventListener('scroll', handleScroll);
       }
+    };
+
+    if (scrollTarget) {
+      scrollTarget.addEventListener('scroll', handleScroll, { passive: true });
     }
 
     // Safety fallback: Never leave content trapped invisible if observer doesn't fire
     const safetyTimer = setTimeout(() => {
       setIsVisible(true);
+      if (scrollTarget) {
+        scrollTarget.removeEventListener('scroll', handleScroll);
+      }
     }, 450 + delay);
 
-    if (typeof IntersectionObserver === 'undefined') {
-      setIsVisible(true);
-      clearTimeout(safetyTimer);
-      return;
+    let observer: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== 'undefined') {
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              setIsVisible(true);
+              clearTimeout(safetyTimer);
+              if (scrollTarget) {
+                scrollTarget.removeEventListener('scroll', handleScroll);
+              }
+              observer?.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          root: container,
+          threshold: 0.01,
+          rootMargin: '50px 0px 50px 0px',
+        }
+      );
+      observer.observe(el);
     }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            clearTimeout(safetyTimer);
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      {
-        root: container,
-        threshold: 0.01,
-        rootMargin: '40px 0px 40px 0px',
-      }
-    );
-
-    observer.observe(el);
 
     return () => {
       clearTimeout(safetyTimer);
-      observer.disconnect();
+      if (scrollTarget) {
+        scrollTarget.removeEventListener('scroll', handleScroll);
+      }
+      observer?.disconnect();
     };
   }, [delay]);
 
@@ -373,7 +396,16 @@ export function BaliHeritageLuxuryTemplate({
   // Auto-scroll inside preview container if activeSectionTarget changes
   useEffect(() => {
     if (!isPreview) return;
-    if (!isOpen) return;
+
+    if (!isOpen) {
+      const container =
+        document.getElementById('device-viewport') ||
+        document.getElementById('device-viewport-mobile');
+      if (container) {
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
+    }
 
     const targetMap: Record<string, string> = {
       cover: 'section-cover',
@@ -390,8 +422,14 @@ export function BaliHeritageLuxuryTemplate({
     if (targetId) {
       const timer = setTimeout(() => {
         performSmoothScroll(targetId);
-      }, 120);
-      return () => clearTimeout(timer);
+      }, 100);
+      const timer2 = setTimeout(() => {
+        performSmoothScroll(targetId);
+      }, 320);
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(timer2);
+      };
     }
   }, [isOpen, activeSectionTarget, isPreview]);
 
