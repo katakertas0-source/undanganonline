@@ -98,9 +98,11 @@ export function PersonalizedGuestClient({
   const guestName = matchedGuest ? matchedGuest.guestName : (initialGuestName || fallbackName);
 
   return (
-    <InvitationEngine
-      invitation={invitation}
-      guestName={guestName}
-    />
+    <div className="w-full flex-1 flex flex-col min-h-screen">
+      <InvitationEngine
+        invitation={invitation}
+        guestName={guestName}
+      />
+    </div>
   );
 }

@@ -71,5 +71,9 @@ export function PublicInvitationClient({
     notFound();
   }
 
-  return <InvitationEngine invitation={invitation} guestName={guestName} />;
+  return (
+    <div className="w-full flex-1 flex flex-col min-h-screen">
+      <InvitationEngine invitation={invitation} guestName={guestName} />
+    </div>
+  );
 }

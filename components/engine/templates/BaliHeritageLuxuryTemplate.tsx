@@ -515,7 +515,11 @@ export function BaliHeritageLuxuryTemplate({
   return (
     <div
       className={`template-bali-heritage relative ${
-        !isOpen ? 'h-full overflow-hidden' : 'min-h-full'
+        !isOpen
+          ? isPreview
+            ? 'h-full min-h-full overflow-hidden'
+            : 'h-[100dvh] min-h-[100dvh] h-screen min-h-screen overflow-hidden'
+          : 'min-h-screen min-h-[100dvh]'
       } w-full ${theme.darkBg} ${theme.darkText} font-sans antialiased select-none`}
     >
       {/* Background Audio Floating Indicator */}
@@ -622,11 +626,13 @@ export function BaliHeritageLuxuryTemplate({
         id="section-cover"
         className={`relative ${
           !isOpen
-            ? 'h-full min-h-full'
-            : forceMobile
-            ? 'min-h-[716px] h-full'
-            : 'min-h-[100dvh] h-full sm:min-h-screen'
-        } w-full flex flex-col justify-between items-center text-center px-4 sm:px-6 pt-12 sm:pt-14 pb-5 sm:pb-6 overflow-hidden select-none`}
+            ? isPreview
+              ? 'h-full min-h-full'
+              : 'h-[100dvh] min-h-[100dvh] h-screen min-h-screen'
+            : isPreview && forceMobile
+            ? 'min-h-[716px]'
+            : 'min-h-[100dvh] sm:min-h-screen'
+        } w-full flex flex-col justify-between items-center text-center px-4 sm:px-6 pt-12 sm:pt-14 pb-8 sm:pb-10 overflow-hidden select-none`}
       >
         {/* Full-bleed Portrait Cover Photo or Living Video Background */}
         <div className="absolute inset-0 z-0 overflow-hidden">
