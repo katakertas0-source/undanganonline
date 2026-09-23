@@ -458,7 +458,7 @@ export default function BuilderPage() {
 
         {/* Left Column / Mobile Bottom Sheet Drawer */}
         <div
-          className={`fixed inset-x-0 bottom-0 max-h-[85vh] bg-white rounded-t-3xl shadow-[0_-12px_45px_rgba(0,0,0,0.25)] z-50 flex flex-col overflow-hidden border-t border-neutral-200 transition-transform duration-300 ease-out lg:static lg:max-h-full lg:rounded-none lg:shadow-none lg:border-t-0 lg:border-r lg:w-[540px] xl:w-[580px] lg:flex lg:z-auto ${
+          className={`fixed inset-x-0 bottom-0 h-[85vh] max-h-[85dvh] bg-white rounded-t-3xl shadow-[0_-12px_45px_rgba(0,0,0,0.25)] z-50 flex flex-col overflow-hidden border-t border-neutral-200 transition-transform duration-300 ease-out lg:static lg:h-full lg:max-h-full lg:rounded-none lg:shadow-none lg:border-t-0 lg:border-r lg:w-[540px] xl:w-[580px] lg:flex lg:z-auto ${
             mobileSheetOpen
               ? 'translate-y-0'
               : 'translate-y-full lg:translate-y-0 pointer-events-none lg:pointer-events-auto'
@@ -592,7 +592,7 @@ export default function BuilderPage() {
           </div>
 
           {/* Form Content Body */}
-          <div className="p-6 space-y-8 flex-1">
+          <div className="p-6 pb-32 space-y-8 flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y">
             {/* 1. Tab: Design & Presets */}
             {activeTab === 'design' && (
               <div className="space-y-6">
