@@ -41,6 +41,7 @@ export function DeviceFrame({ children, isDark }: DeviceFrameProps) {
           {/* Screen Scroll Viewport: Content flows 100% full-bleed from absolute top to bottom */}
           <div
             id="device-viewport"
+            data-device-viewport="true"
             className="w-full h-full overflow-y-auto overflow-x-hidden relative [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
           >
             {children}

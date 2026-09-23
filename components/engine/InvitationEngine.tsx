@@ -78,7 +78,7 @@ export function InvitationEngine({
     if (!isPreview) return;
 
     if (!isOpen) {
-      const container = document.getElementById('device-viewport');
+      const container = document.getElementById('device-viewport') || document.getElementById('device-viewport-mobile');
       if (container) {
         container.scrollTo({
           top: 0,
@@ -101,7 +101,7 @@ export function InvitationEngine({
       };
       const targetId = targetMap[activeSectionTarget];
       const timer = setTimeout(() => {
-        const container = document.getElementById('device-viewport');
+        const container = document.getElementById('device-viewport') || document.getElementById('device-viewport-mobile');
         if (targetId) {
           if (targetId === 'section-cover') {
             container?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -131,7 +131,7 @@ export function InvitationEngine({
   const handleOpenInvitation = () => {
     setIsOpen(true);
     setTimeout(() => {
-      const container = document.getElementById('device-viewport');
+      const container = document.getElementById('device-viewport') || document.getElementById('device-viewport-mobile');
       if (container) {
         container.scrollTo({
           top: 680,

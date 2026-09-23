@@ -3029,7 +3029,8 @@ export default function BuilderPage() {
           {/* Mobile Viewport: Direct full-width fluid view on mobile screens (< lg) */}
           <div className="lg:hidden flex-1 min-h-0 w-full h-full relative overflow-hidden bg-[#FAF8F5] flex flex-col pb-16">
             <div
-              id="device-viewport"
+              id="device-viewport-mobile"
+              data-device-viewport="true"
               className="w-full h-full overflow-y-auto overflow-x-hidden relative [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
               <InvitationEngine

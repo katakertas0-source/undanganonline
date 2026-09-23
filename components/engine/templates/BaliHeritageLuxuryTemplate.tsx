@@ -36,7 +36,7 @@ interface RevealProps {
   className?: string;
 }
 
-function Reveal({ children, delay = 0, yOffset = 26, className = '' }: RevealProps) {
+function Reveal({ children, delay = 0, yOffset = 20, className = '' }: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -44,37 +44,74 @@ function Reveal({ children, delay = 0, yOffset = 26, className = '' }: RevealPro
     const el = ref.current;
     if (!el) return;
 
-    // Detect if inside builder preview container or standalone window
-    const container = document.getElementById('device-viewport');
+    // Detect actual ancestor scroll container
+    const container =
+      el.closest('#device-viewport') ||
+      el.closest('#device-viewport-mobile') ||
+      el.closest('[data-device-viewport]') ||
+      null;
+
+    // Quick check: If element is already in viewport or container on mount, reveal right away
+    if (container) {
+      const containerRect = container.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      if (
+        elRect.top < containerRect.bottom + 60 &&
+        elRect.bottom > containerRect.top - 60
+      ) {
+        setIsVisible(true);
+        return;
+      }
+    } else if (typeof window !== 'undefined') {
+      const elRect = el.getBoundingClientRect();
+      if (elRect.top < window.innerHeight + 60 && elRect.bottom > -60) {
+        setIsVisible(true);
+        return;
+      }
+    }
+
+    // Safety fallback: Never leave content trapped invisible if observer doesn't fire
+    const safetyTimer = setTimeout(() => {
+      setIsVisible(true);
+    }, 450 + delay);
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true);
+      clearTimeout(safetyTimer);
+      return;
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIsVisible(true);
+            clearTimeout(safetyTimer);
             observer.unobserve(entry.target);
           }
         });
       },
       {
-        root: container || null,
-        threshold: 0.05,
-        rootMargin: '0px 0px -25px 0px',
+        root: container,
+        threshold: 0.01,
+        rootMargin: '40px 0px 40px 0px',
       }
     );
 
     observer.observe(el);
 
     return () => {
+      clearTimeout(safetyTimer);
       observer.disconnect();
     };
-  }, []);
+  }, [delay]);
 
   return (
     <div
       ref={ref}
       style={{
-        transitionDuration: '800ms',
+        transitionProperty: 'opacity, transform',
+        transitionDuration: '700ms',
         transitionDelay: `${delay}ms`,
         transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
         opacity: isVisible ? 1 : 0,
@@ -290,7 +327,9 @@ export function BaliHeritageLuxuryTemplate({
     setIsNavOpen(false);
 
     setTimeout(() => {
-      const container = document.getElementById('device-viewport');
+      const container =
+        document.getElementById('device-viewport') ||
+        document.getElementById('device-viewport-mobile');
 
       // Special case: Cover / Beranda
       if (targetId === 'section-cover') {
@@ -336,24 +375,23 @@ export function BaliHeritageLuxuryTemplate({
     if (!isPreview) return;
     if (!isOpen) return;
 
-    if (activeSectionTarget) {
-      const targetMap: Record<string, string> = {
-        cover: 'section-cover',
-        couple: 'section-tentang',
-        events: 'section-acara',
-        gallery: 'section-galeri',
-        story: 'section-kisah',
-        video: 'section-video',
-        gifts: 'section-tanda-kasih',
-        rsvp: 'section-rsvp',
-      };
-      const targetId = targetMap[activeSectionTarget];
-      if (targetId) {
-        const timer = setTimeout(() => {
-          performSmoothScroll(targetId);
-        }, 120);
-        return () => clearTimeout(timer);
-      }
+    const targetMap: Record<string, string> = {
+      cover: 'section-cover',
+      couple: 'section-tentang',
+      events: 'section-acara',
+      gallery: 'section-galeri',
+      story: 'section-kisah',
+      video: 'section-video',
+      gifts: 'section-tanda-kasih',
+      rsvp: 'section-rsvp',
+    };
+
+    const targetId = activeSectionTarget ? targetMap[activeSectionTarget] : 'section-tentang';
+    if (targetId) {
+      const timer = setTimeout(() => {
+        performSmoothScroll(targetId);
+      }, 120);
+      return () => clearTimeout(timer);
     }
   }, [isOpen, activeSectionTarget, isPreview]);
 
