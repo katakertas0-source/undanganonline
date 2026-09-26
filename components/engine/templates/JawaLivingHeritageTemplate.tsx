@@ -347,6 +347,9 @@ export function JawaLivingHeritageTemplate({
       coverArchTopColor: '#7A5A30',
       coverArchTopAccent: '#C2A468',
       coverBtnBg: 'bg-[#2C1E14] border-[#C2A468] text-[#FAF6F0] hover:bg-[#8A6D3B]',
+      coverCardBg: 'bg-[#FAF5EC]/92 border-[#C2A468]/50 shadow-[0_8px_24px_rgba(44,30,20,0.14)]',
+      coverCardText: 'text-[#2C1E14]',
+      coverCardSub: 'text-[#7A6046]',
       darkBg: 'bg-[#211A16]',
       darkBgHex: '#211A16',
       darkText: 'text-[#F1E9DC]',
@@ -365,6 +368,9 @@ export function JawaLivingHeritageTemplate({
       coverArchTopColor: '#3A2E20',
       coverArchTopAccent: '#D4AF37',
       coverBtnBg: 'bg-[#0A0807] border-[#D4AF37] text-[#FAF6F0] hover:bg-[#D4AF37] hover:text-[#0A0807]',
+      coverCardBg: 'bg-[#140F0C]/92 border-[#D4AF37]/50 shadow-[0_8px_24px_rgba(0,0,0,0.6)]',
+      coverCardText: 'text-[#F5EFEB]',
+      coverCardSub: 'text-[#D4AF37]',
       darkBg: 'bg-[#0E0B0A]',
       darkBgHex: '#0E0B0A',
       darkText: 'text-[#F5EFEB]',
@@ -383,6 +389,9 @@ export function JawaLivingHeritageTemplate({
       coverArchTopColor: '#524332',
       coverArchTopAccent: '#B89855',
       coverBtnBg: 'bg-[#181411] border-[#B89855] text-[#FFFFFF] hover:bg-[#967840]',
+      coverCardBg: 'bg-[#FFFFFF]/95 border-[#B89855]/50 shadow-[0_8px_24px_rgba(0,0,0,0.08)]',
+      coverCardText: 'text-[#181411]',
+      coverCardSub: 'text-[#8A7555]',
       darkBg: 'bg-[#1C1714]',
       darkBgHex: '#1C1714',
       darkText: 'text-[#FAF6F0]',
@@ -401,6 +410,9 @@ export function JawaLivingHeritageTemplate({
     coverArchTopColor: '#7A5A30',
     coverArchTopAccent: '#C2A468',
     coverBtnBg: 'bg-[#2C1E14] border-[#C2A468] text-[#FAF6F0] hover:bg-[#8A6D3B]',
+    coverCardBg: 'bg-[#FAF5EC]/92 border-[#C2A468]/50 shadow-[0_8px_24px_rgba(44,30,20,0.14)]',
+    coverCardText: 'text-[#2C1E14]',
+    coverCardSub: 'text-[#7A6046]',
     darkBg: 'bg-[#211A16]',
     darkBgHex: '#211A16',
     darkText: 'text-[#F1E9DC]',
@@ -700,7 +712,7 @@ export function JawaLivingHeritageTemplate({
             : isPreview && forceMobile
             ? 'min-h-[716px]'
             : 'min-h-[100dvh] sm:min-h-screen'
-        } w-full flex flex-col justify-between items-center text-center overflow-hidden select-none`}
+        } w-full overflow-hidden select-none`}
         style={{
           background: theme.coverBg,
         }}
@@ -711,12 +723,12 @@ export function JawaLivingHeritageTemplate({
         </div>
 
         {/* Layer 1: Top Javanese Carved Teakwood Arch Relief */}
-        <div className="absolute top-0 inset-x-0 z-30 pointer-events-none drop-shadow-[0_6px_14px_rgba(61,44,30,0.3)]">
-          <JavaneseCarvedArchTop className="w-full h-11 sm:h-14 md:h-16" color={theme.coverArchTopColor} accentColor={theme.coverArchTopAccent} opacity={0.95} />
+        <div className="absolute top-0 inset-x-0 z-40 pointer-events-none drop-shadow-[0_6px_14px_rgba(61,44,30,0.3)]">
+          <JavaneseCarvedArchTop className="w-full h-10 sm:h-14 md:h-16" color={theme.coverArchTopColor} accentColor={theme.coverArchTopAccent} opacity={0.95} />
         </div>
 
         {/* Layer 2: Traditional Mega Mendung Clouds Drifting in the Sky */}
-        <div className="absolute top-6 sm:top-8 inset-x-0 z-5 pointer-events-none jawa-cloud-drift opacity-45">
+        <div className="absolute top-5 sm:top-8 inset-x-0 z-5 pointer-events-none jawa-cloud-drift opacity-45">
           <JavaneseMegaMendungClouds className="w-full h-24 sm:h-28" color={theme.coverAccentHex} opacity={0.5} />
         </div>
 
@@ -724,76 +736,20 @@ export function JawaLivingHeritageTemplate({
         <JavaneseFloatingDustMotes className="inset-0 pointer-events-none z-10 opacity-70" />
 
         {/* ===================================================================== */}
-        {/* UPPER ZONE: ROYAL TYPOGRAPHY & CALL TO ACTION (THE SKY - 40% HEIGHT)   */}
+        {/* LOWER STAGE: HERITAGE JOGLO & GUNUNGAN BACKDROP                       */}
         {/* ===================================================================== */}
-        <div className="relative z-25 w-full max-w-xl mx-auto flex flex-col items-center justify-start pt-6 sm:pt-8 px-4 shrink-0">
-          {/* Subtle Royal Mentul Crest */}
-          <JavaneseMentulIcon className={`w-5 h-5 sm:w-6 sm:h-6 ${theme.coverAccent} mb-1 opacity-90 jawa-radiance-pulse`} />
-
-          {/* Serat Ulem Heritage Title */}
-          <p className={`text-[8px] sm:text-[9.5px] uppercase tracking-[0.3em] ${theme.coverAccent} ${titleFontClass} font-medium mb-1`}>
-            SERAT ULEM · PAWIWAHAN
-          </p>
-
-          {/* Guest Greeting Pill (if provided) */}
-          {guestName && (
-            <div className="mb-1.5 px-4 py-1 rounded-full bg-[#FAF5EC]/90 border border-[#8A6D3B]/40 shadow-xs backdrop-blur-xs">
-              <p className="text-[8.5px] sm:text-[9.5px] uppercase tracking-[0.22em] text-[#7A6046]">
-                Kepada Yth: <span className={`${headingFontClass} font-semibold text-[#2C1E14] ml-1`}>{guestName}</span>
-              </p>
-            </div>
-          )}
-
-          {/* Dynamic Header Cover Text */}
-          <p className={`text-[8.5px] sm:text-[10px] uppercase tracking-[0.32em] ${theme.coverAccent} ${titleFontClass} font-semibold mt-0.5`}>
-            {coverTitle}
-          </p>
-
-          {/* Couple Nicknames */}
-          <h1 className={`${headingFontClass} ${forceMobile ? 'text-2xl' : 'text-2xl sm:text-4xl md:text-5xl'} uppercase leading-tight tracking-[0.14em] sm:tracking-[0.16em] ${theme.coverTextDark} drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] mt-0.5 mb-0.5`}>
-            {groomNickname} <span className={`italic font-light ${theme.coverAccent}`}>&amp;</span> {brideNickname}
-          </h1>
-
-          {/* Wedding Date */}
-          <p className={`${titleFontClass} text-xs sm:text-sm md:text-base tracking-[0.24em] sm:tracking-[0.26em] ${theme.coverAccent} font-medium mb-3`}>
-            {formattedFullDate || formattedDottedDate}
-          </p>
-
-          {/* Call to Action Button or Mouse Scroll Indicator */}
-          {!isOpen ? (
-            <button
-              onClick={handleOpenInvitation}
-              className={`group relative inline-flex items-center gap-2.5 ${forceMobile ? 'px-6 py-2.5 text-[9.5px]' : 'px-6 sm:px-8 py-2.5 sm:py-3 text-[9.5px] sm:text-xs'} uppercase tracking-[0.22em] sm:tracking-[0.25em] ${theme.coverBtnBg} border-2 transition-all duration-300 shadow-[0_10px_24px_rgba(44,30,20,0.35)] active:scale-95 cursor-pointer z-30`}
-            >
-              <span className="relative z-10 font-medium tracking-widest">BUKA UNDANGAN</span>
-              <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-1 text-xs">→</span>
-              <span className="absolute -inset-0.5 rounded-full bg-[#C2A468]/30 blur-sm group-hover:bg-[#C2A468]/50 transition-colors pointer-events-none" />
-            </button>
-          ) : (
-            <div
-              className="z-30 cursor-pointer pt-0.5"
-              onClick={() => scrollToSection('section-tentang')}
-            >
-              <JavaneseMouseScrollIndicator color={theme.goldAccentHex} label="Scroll ke Bawah" />
-            </div>
-          )}
-        </div>
-
-        {/* ===================================================================== */}
-        {/* LOWER ZONE: HERITAGE THEATER STAGE (FULL-BLEED 60% VIEWPORT HEIGHT)  */}
-        {/* ===================================================================== */}
-        <div className="relative w-full h-[58%] sm:h-[62%] md:h-[65%] min-h-[380px] sm:min-h-[460px] pointer-events-none flex items-end justify-center overflow-hidden shrink-0">
-          {/* Layer 1: Full-Bleed Panoramic Joglo Dalem Agung Estate with Antique Banyan Trees */}
+        <div className="absolute inset-x-0 bottom-0 h-[52%] sm:h-[58%] md:h-[62%] min-h-[340px] sm:min-h-[440px] pointer-events-none flex items-end justify-center overflow-hidden z-10">
+          {/* Layer 1: Panoramic Joglo Dalem Agung Estate */}
           <div className="absolute inset-0 w-full h-full flex justify-center items-end jawa-joglo-breathe">
             <img
               src="/images/jawa-joglo-panoramic.png"
               alt="Pendopo Joglo Dalem Agung"
-              className="w-full h-full object-cover object-bottom filter brightness-[0.98] contrast-[1.05] drop-shadow-sm opacity-95"
+              className="w-full h-full object-cover object-bottom filter brightness-[0.98] contrast-[1.05] drop-shadow-sm opacity-95 scale-105 sm:scale-100 origin-bottom"
             />
           </div>
 
           {/* Layer 2: Outer Left Corner Botanical Accent */}
-          <div className="absolute bottom-0 left-0 w-24 sm:w-36 md:w-48 h-32 sm:h-44 md:h-56 z-10 pointer-events-none opacity-75 jawa-sway-left">
+          <div className="absolute bottom-0 left-0 w-20 sm:w-36 md:w-48 h-28 sm:h-44 md:h-56 z-10 pointer-events-none opacity-75 jawa-sway-left">
             <img
               src="/images/jawa-crescent-flower.png"
               alt="Corner Foliage Left"
@@ -802,7 +758,7 @@ export function JawaLivingHeritageTemplate({
           </div>
 
           {/* Layer 3: Outer Right Corner Botanical Accent (Mirrored) */}
-          <div className="absolute bottom-0 right-0 w-24 sm:w-36 md:w-48 h-32 sm:h-44 md:h-56 z-10 pointer-events-none opacity-75 jawa-sway-right scale-x-[-1]">
+          <div className="absolute bottom-0 right-0 w-20 sm:w-36 md:w-48 h-28 sm:h-44 md:h-56 z-10 pointer-events-none opacity-75 jawa-sway-right scale-x-[-1]">
             <img
               src="/images/jawa-crescent-flower.png"
               alt="Corner Foliage Right"
@@ -811,7 +767,7 @@ export function JawaLivingHeritageTemplate({
           </div>
 
           {/* Layer 4: Altar Left Floral Spray (Snug Flanking the Gunungan) */}
-          <div className="absolute bottom-0 left-[calc(50%-145px)] sm:left-[calc(50%-190px)] md:left-[calc(50%-240px)] w-32 sm:w-42 md:w-52 h-40 sm:h-54 md:h-64 z-15 pointer-events-none jawa-sway-left">
+          <div className="absolute bottom-0 left-[calc(50%-130px)] sm:left-[calc(50%-180px)] md:left-[calc(50%-230px)] w-28 sm:w-40 md:w-48 h-36 sm:h-50 md:h-60 z-15 pointer-events-none jawa-sway-left">
             <img
               src="/images/jawa-crescent-flower.png"
               alt="Living Botanical Foliage Left"
@@ -820,7 +776,7 @@ export function JawaLivingHeritageTemplate({
           </div>
 
           {/* Layer 5: Altar Right Floral Spray (Snug Flanking the Gunungan - Mirrored) */}
-          <div className="absolute bottom-0 right-[calc(50%-145px)] sm:right-[calc(50%-190px)] md:right-[calc(50%-240px)] w-32 sm:w-42 md:w-52 h-40 sm:h-54 md:h-64 z-15 pointer-events-none jawa-sway-right scale-x-[-1]">
+          <div className="absolute bottom-0 right-[calc(50%-130px)] sm:right-[calc(50%-180px)] md:right-[calc(50%-230px)] w-28 sm:w-40 md:w-48 h-36 sm:h-50 md:h-60 z-15 pointer-events-none jawa-sway-right scale-x-[-1]">
             <img
               src="/images/jawa-crescent-flower.png"
               alt="Living Botanical Foliage Right"
@@ -829,7 +785,7 @@ export function JawaLivingHeritageTemplate({
           </div>
 
           {/* Layer 6: Foreground Center Golden Gunungan (Majestic Stately Puppet) */}
-          <div className="absolute bottom-1 sm:bottom-2 left-1/2 -translate-x-1/2 w-32 sm:w-42 md:w-52 h-44 sm:h-56 md:h-68 z-20 pointer-events-none jawa-gunungan-float">
+          <div className="absolute bottom-1 sm:bottom-2 left-1/2 -translate-x-1/2 w-28 sm:w-38 md:w-48 h-38 sm:h-52 md:h-64 z-20 pointer-events-none jawa-gunungan-float">
             <img
               src="/images/jawa-gold-gunungan.png"
               alt="Living Gunungan Wayang"
@@ -841,6 +797,77 @@ export function JawaLivingHeritageTemplate({
           <div className="absolute bottom-0 inset-x-0 z-25 pointer-events-none drop-shadow-[0_-4px_12px_rgba(61,44,30,0.25)]">
             <JavaneseCarvedArchBottom className="w-full h-8 sm:h-11 md:h-14" color={theme.coverArchTopColor} accentColor={theme.coverArchTopAccent} opacity={0.95} />
           </div>
+        </div>
+
+        {/* ===================================================================== */}
+        {/* FOREGROUND: ROYAL INVOCATION, GUEST CARD & ACTION (100% PROPORTIONAL) */}
+        {/* ===================================================================== */}
+        <div className="relative z-30 w-full h-full max-w-xl mx-auto flex flex-col justify-between items-center text-center px-4 pt-9 pb-6 sm:pt-14 sm:pb-8">
+          {/* Top Zone: Royal Crest, Serat Ulem, Couple Names, Date */}
+          <div className="w-full flex flex-col items-center shrink-0">
+            {/* Subtle Royal Mentul Crest */}
+            <JavaneseMentulIcon className={`w-5 h-5 sm:w-6 sm:h-6 ${theme.coverAccent} mb-1 sm:mb-1.5 opacity-90 jawa-radiance-pulse`} />
+
+            {/* Serat Ulem Heritage Title */}
+            <p className={`text-[8.5px] sm:text-[10px] uppercase tracking-[0.32em] sm:tracking-[0.36em] ${theme.coverAccent} ${titleFontClass} font-semibold mb-0.5`}>
+              SERAT ULEM · PAWIWAHAN
+            </p>
+
+            {/* Dynamic Header Cover Text */}
+            <p className={`text-[8px] sm:text-[9.5px] uppercase tracking-[0.28em] ${theme.coverAccent} ${titleFontClass} font-medium mb-1`}>
+              {coverTitle}
+            </p>
+
+            {/* Couple Nicknames */}
+            <h1 className={`${headingFontClass} text-2xl sm:text-4xl md:text-5xl uppercase leading-tight tracking-[0.14em] sm:tracking-[0.16em] ${theme.coverTextDark} drop-shadow-[0_1px_2px_rgba(255,255,255,0.8)] my-1`}>
+              {groomNickname} <span className={`italic font-light ${theme.coverAccent}`}>&amp;</span> {brideNickname}
+            </h1>
+
+            {/* Wedding Date */}
+            <p className={`${titleFontClass} text-xs sm:text-sm md:text-base tracking-[0.22em] sm:tracking-[0.26em] ${theme.coverAccent} font-medium mt-0.5 mb-1.5`}>
+              {formattedFullDate || formattedDottedDate}
+            </p>
+
+            <JavaneseFloralDivider className="w-28 sm:w-36 h-4 mx-auto text-[#C2A468]/70" />
+          </div>
+
+          {/* Center Zone: Royal Guest Card & "Buka Undangan" Button */}
+          <div className="w-full flex flex-col items-center my-auto py-2.5 z-30 shrink-0">
+            {/* Royal Parchment Guest Card */}
+            <div className={`px-5 sm:px-6 py-2.5 sm:py-3.5 rounded-2xl ${theme.coverCardBg} border backdrop-blur-md max-w-[270px] sm:max-w-xs w-full mx-auto text-center mb-3 sm:mb-4 jawa-radiance-pulse`}>
+              <p className={`text-[8px] sm:text-[9px] uppercase tracking-[0.24em] ${theme.coverCardSub} font-medium mb-0.5`}>
+                Kepada Yth. Bapak/Ibu/Saudara/i:
+              </p>
+              <p className={`${headingFontClass} text-sm sm:text-base font-semibold ${theme.coverCardText} tracking-wider truncate px-1`}>
+                {guestName || 'Tamu Undangan'}
+              </p>
+              <p className="text-[7.5px] sm:text-[8px] italic text-[#8A6D3B]/90 mt-0.5">
+                Tanpa Mengurangi Rasa Hormat
+              </p>
+            </div>
+
+            {/* Action Button: Buka Undangan or Scroll Indicator */}
+            {!isOpen ? (
+              <button
+                onClick={handleOpenInvitation}
+                className={`group relative inline-flex items-center justify-center gap-2.5 sm:gap-3 px-7 sm:px-9 py-3 sm:py-3.5 text-[10px] sm:text-xs uppercase tracking-[0.24em] sm:tracking-[0.28em] ${theme.coverBtnBg} border-2 rounded-full transition-all duration-300 shadow-[0_12px_28px_rgba(44,30,20,0.38)] hover:scale-105 active:scale-95 cursor-pointer z-30`}
+              >
+                <span className="relative z-10 font-medium tracking-widest">BUKA UNDANGAN</span>
+                <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-1.5 text-xs sm:text-sm">→</span>
+                <span className="absolute -inset-1 rounded-full bg-[#C2A468]/30 blur-md group-hover:bg-[#C2A468]/50 transition-colors pointer-events-none" />
+              </button>
+            ) : (
+              <div
+                className="z-30 cursor-pointer pt-1"
+                onClick={() => scrollToSection('section-tentang')}
+              >
+                <JavaneseMouseScrollIndicator color={theme.goldAccentHex} label="Scroll ke Bawah" />
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Clearance Spacer for Gunungan Wayang Altar */}
+          <div className="h-16 sm:h-22 md:h-24 shrink-0 pointer-events-none" />
         </div>
       </section>
 
