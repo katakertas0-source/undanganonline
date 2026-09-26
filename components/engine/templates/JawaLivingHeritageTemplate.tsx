@@ -793,10 +793,10 @@ export function JawaLivingHeritageTemplate({
         </div>
 
         {/* ===================================================================== */}
-        {/* MIDDLE OPEN SKY: LIVING BIRDS FLYING ACROSS HORIZON (MOTION LIVING)  */}
+        {/* MIDDLE OPEN SKY: LIVING BIRDS FLYING ACROSS HORIZON (Z-35 OVERLAY)   */}
         {/* ===================================================================== */}
-        <div className="absolute inset-x-0 top-[26%] sm:top-[28%] h-[35%] sm:h-[40%] pointer-events-none z-20 overflow-hidden">
-          <JavaneseFlyingBirds color={theme.coverAccentHex} opacity={0.8} />
+        <div className="absolute inset-x-0 top-[22%] sm:top-[24%] h-[42%] sm:h-[46%] pointer-events-none z-35 overflow-hidden">
+          <JavaneseFlyingBirds color="#2C1E14" opacity={0.92} />
         </div>
 
         {/* ===================================================================== */}

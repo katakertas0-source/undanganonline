@@ -1065,8 +1065,8 @@ export function JavaneseRoyalSeal({ className = 'w-10 h-10', label = 'PRASASTI' 
  */
 export function JavaneseFlyingBirds({
   className = 'w-full h-full',
-  color = '#7A5A30',
-  opacity = 0.75,
+  color = '#2C1E14',
+  opacity = 0.9,
 }: {
   className?: string;
   color?: string;
@@ -1075,47 +1075,59 @@ export function JavaneseFlyingBirds({
   return (
     <div className={`relative ${className} pointer-events-none select-none overflow-hidden`} style={{ opacity }}>
       {/* Bird 1: Lead swallow (Flock Leader) */}
-      <div className="absolute top-[32%] -left-12 jawa-bird-flight-1">
-        <div className="jawa-bird-flap-fast">
-          <svg viewBox="0 0 32 18" fill="none" className="w-7 h-4 filter drop-shadow-[0_1.5px_3px_rgba(44,30,20,0.22)]">
+      <div className="absolute top-[30%] left-0 jawa-bird-fly-1">
+        <div className="jawa-wing-beat-fast">
+          <svg viewBox="0 0 48 24" fill="none" className="w-11 h-6 filter drop-shadow-[0_2px_4px_rgba(44,30,20,0.35)]">
             <path
-              d="M16 10 C14 8 10 3 1 4 C6 8 12 10 14 11 C13 13 12 16 11 18 C14 15 15.5 12 16 11 C16.5 12 18 15 21 18 C20 16 19 13 18 11 C20 10 26 8 31 4 C22 3 18 8 16 10 Z"
+              d="M24 12 C21 9 14 3 2 4 C10 9 18 12 21 14 C19 17 18 21 17 24 C21 20 23 16 24 14 C25 16 27 20 31 24 C30 21 29 17 27 14 C30 12 38 9 46 4 C34 3 27 9 24 12 Z"
               fill={color}
             />
           </svg>
         </div>
       </div>
 
-      {/* Bird 2: Trailing swallow (Slightly higher & smaller) */}
-      <div className="absolute top-[20%] -left-16 jawa-bird-flight-2">
-        <div className="jawa-bird-flap-medium">
-          <svg viewBox="0 0 32 18" fill="none" className="w-5.5 h-3 filter drop-shadow-[0_1.5px_3px_rgba(44,30,20,0.18)]">
+      {/* Bird 2: Trailing swallow (Slightly higher) */}
+      <div className="absolute top-[16%] left-0 jawa-bird-fly-2">
+        <div className="jawa-wing-beat-med">
+          <svg viewBox="0 0 48 24" fill="none" className="w-9 h-4.5 filter drop-shadow-[0_2px_4px_rgba(44,30,20,0.3)]">
             <path
-              d="M16 10 C14 8 10 3 1 4 C6 8 12 10 14 11 C13 13 12 16 11 18 C14 15 15.5 12 16 11 C16.5 12 18 15 21 18 C20 16 19 13 18 11 C20 10 26 8 31 4 C22 3 18 8 16 10 Z"
+              d="M24 12 C21 9 14 3 2 4 C10 9 18 12 21 14 C19 17 18 21 17 24 C21 20 23 16 24 14 C25 16 27 20 31 24 C30 21 29 17 27 14 C30 12 38 9 46 4 C34 3 27 9 24 12 Z"
               fill={color}
             />
           </svg>
         </div>
       </div>
 
-      {/* Bird 3: Trailing swallow 2 (Slightly lower & smaller) */}
-      <div className="absolute top-[52%] -left-20 jawa-bird-flight-3">
-        <div className="jawa-bird-flap-gentle">
-          <svg viewBox="0 0 32 18" fill="none" className="w-4.5 h-2.5 filter drop-shadow-[0_1px_2px_rgba(44,30,20,0.15)]">
+      {/* Bird 3: Wingman swallow (Lower sky, closer to Joglo roof) */}
+      <div className="absolute top-[52%] left-0 jawa-bird-fly-3">
+        <div className="jawa-wing-beat-fast">
+          <svg viewBox="0 0 48 24" fill="none" className="w-9.5 h-5 filter drop-shadow-[0_2px_4px_rgba(44,30,20,0.3)]">
             <path
-              d="M16 10 C14 8 10 3 1 4 C6 8 12 10 14 11 C13 13 12 16 11 18 C14 15 15.5 12 16 11 C16.5 12 18 15 21 18 C20 16 19 13 18 11 C20 10 26 8 31 4 C22 3 18 8 16 10 Z"
+              d="M24 12 C21 9 14 3 2 4 C10 9 18 12 21 14 C19 17 18 21 17 24 C21 20 23 16 24 14 C25 16 27 20 31 24 C30 21 29 17 27 14 C30 12 38 9 46 4 C34 3 27 9 24 12 Z"
               fill={color}
             />
           </svg>
         </div>
       </div>
 
-      {/* Bird 4: Solo distant swallow soaring high */}
-      <div className="absolute top-[12%] -left-14 jawa-bird-flight-4">
-        <div className="jawa-bird-flap-soar">
-          <svg viewBox="0 0 32 18" fill="none" className="w-3.5 h-2 opacity-75">
+      {/* Bird 4: Distant companion (Far in sky) */}
+      <div className="absolute top-[8%] left-0 jawa-bird-fly-4">
+        <div className="jawa-wing-beat-slow">
+          <svg viewBox="0 0 48 24" fill="none" className="w-7 h-3.5 opacity-85 filter drop-shadow-[0_1.5px_3px_rgba(44,30,20,0.25)]">
             <path
-              d="M16 10 C14 8 10 3 1 4 C6 8 12 10 14 11 C13 13 12 16 11 18 C14 15 15.5 12 16 11 C16.5 12 18 15 21 18 C20 16 19 13 18 11 C20 10 26 8 31 4 C22 3 18 8 16 10 Z"
+              d="M24 12 C21 9 14 3 2 4 C10 9 18 12 21 14 C19 17 18 21 17 24 C21 20 23 16 24 14 C25 16 27 20 31 24 C30 21 29 17 27 14 C30 12 38 9 46 4 C34 3 27 9 24 12 Z"
+              fill={color}
+            />
+          </svg>
+        </div>
+      </div>
+
+      {/* Bird 5: Solitary Swallow gliding (Mid-high sky) */}
+      <div className="absolute top-[38%] left-0 jawa-bird-fly-5">
+        <div className="jawa-wing-beat-med">
+          <svg viewBox="0 0 48 24" fill="none" className="w-8 h-4 opacity-90 filter drop-shadow-[0_2px_4px_rgba(44,30,20,0.3)]">
+            <path
+              d="M24 12 C21 9 14 3 2 4 C10 9 18 12 21 14 C19 17 18 21 17 24 C21 20 23 16 24 14 C25 16 27 20 31 24 C30 21 29 17 27 14 C30 12 38 9 46 4 C34 3 27 9 24 12 Z"
               fill={color}
             />
           </svg>
