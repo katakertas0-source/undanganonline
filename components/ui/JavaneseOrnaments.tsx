@@ -1058,3 +1058,70 @@ export function JavaneseRoyalSeal({ className = 'w-10 h-10', label = 'PRASASTI' 
     </div>
   );
 }
+
+/**
+ * Classical Javanese Flying Swallows / Sriti Silhouette Flock (Burung Sriti Melayang Ing Awang-Awang)
+ * Creates poetic, continuous living motion across the open sky zone above the Pendopo Joglo.
+ */
+export function JavaneseFlyingBirds({
+  className = 'w-full h-full',
+  color = '#7A5A30',
+  opacity = 0.75,
+}: {
+  className?: string;
+  color?: string;
+  opacity?: number;
+}) {
+  return (
+    <div className={`relative ${className} pointer-events-none select-none overflow-hidden`} style={{ opacity }}>
+      {/* Bird 1: Lead swallow (Flock Leader) */}
+      <div className="absolute top-[32%] -left-12 jawa-bird-flight-1">
+        <div className="jawa-bird-flap-fast">
+          <svg viewBox="0 0 32 18" fill="none" className="w-7 h-4 filter drop-shadow-[0_1.5px_3px_rgba(44,30,20,0.22)]">
+            <path
+              d="M16 10 C14 8 10 3 1 4 C6 8 12 10 14 11 C13 13 12 16 11 18 C14 15 15.5 12 16 11 C16.5 12 18 15 21 18 C20 16 19 13 18 11 C20 10 26 8 31 4 C22 3 18 8 16 10 Z"
+              fill={color}
+            />
+          </svg>
+        </div>
+      </div>
+
+      {/* Bird 2: Trailing swallow (Slightly higher & smaller) */}
+      <div className="absolute top-[20%] -left-16 jawa-bird-flight-2">
+        <div className="jawa-bird-flap-medium">
+          <svg viewBox="0 0 32 18" fill="none" className="w-5.5 h-3 filter drop-shadow-[0_1.5px_3px_rgba(44,30,20,0.18)]">
+            <path
+              d="M16 10 C14 8 10 3 1 4 C6 8 12 10 14 11 C13 13 12 16 11 18 C14 15 15.5 12 16 11 C16.5 12 18 15 21 18 C20 16 19 13 18 11 C20 10 26 8 31 4 C22 3 18 8 16 10 Z"
+              fill={color}
+            />
+          </svg>
+        </div>
+      </div>
+
+      {/* Bird 3: Trailing swallow 2 (Slightly lower & smaller) */}
+      <div className="absolute top-[52%] -left-20 jawa-bird-flight-3">
+        <div className="jawa-bird-flap-gentle">
+          <svg viewBox="0 0 32 18" fill="none" className="w-4.5 h-2.5 filter drop-shadow-[0_1px_2px_rgba(44,30,20,0.15)]">
+            <path
+              d="M16 10 C14 8 10 3 1 4 C6 8 12 10 14 11 C13 13 12 16 11 18 C14 15 15.5 12 16 11 C16.5 12 18 15 21 18 C20 16 19 13 18 11 C20 10 26 8 31 4 C22 3 18 8 16 10 Z"
+              fill={color}
+            />
+          </svg>
+        </div>
+      </div>
+
+      {/* Bird 4: Solo distant swallow soaring high */}
+      <div className="absolute top-[12%] -left-14 jawa-bird-flight-4">
+        <div className="jawa-bird-flap-soar">
+          <svg viewBox="0 0 32 18" fill="none" className="w-3.5 h-2 opacity-75">
+            <path
+              d="M16 10 C14 8 10 3 1 4 C6 8 12 10 14 11 C13 13 12 16 11 18 C14 15 15.5 12 16 11 C16.5 12 18 15 21 18 C20 16 19 13 18 11 C20 10 26 8 31 4 C22 3 18 8 16 10 Z"
+              fill={color}
+            />
+          </svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+

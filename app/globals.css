@@ -734,5 +734,178 @@ html {
   will-change: transform;
 }
 
+/* =========================================================================
+   JAWA LIVING BIRDS FLIGHT & WING FLAP ANIMATIONS
+   ========================================================================= */
+
+@keyframes jawaBirdFlight1 {
+  0% {
+    transform: translate3d(-30px, 0px, 0);
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.9;
+  }
+  30% {
+    transform: translate3d(calc(30vw), -14px, 0);
+  }
+  60% {
+    transform: translate3d(calc(65vw), 8px, 0);
+  }
+  92% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(calc(105vw + 40px), -6px, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes jawaBirdFlight2 {
+  0% {
+    transform: translate3d(-40px, 0px, 0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+  }
+  35% {
+    transform: translate3d(calc(35vw), -10px, 0);
+  }
+  70% {
+    transform: translate3d(calc(72vw), 12px, 0);
+  }
+  90% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(calc(105vw + 50px), -4px, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes jawaBirdFlight3 {
+  0% {
+    transform: translate3d(-30px, 0px, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.75;
+  }
+  40% {
+    transform: translate3d(calc(40vw), 10px, 0);
+  }
+  75% {
+    transform: translate3d(calc(78vw), -8px, 0);
+  }
+  88% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate3d(calc(105vw + 40px), 6px, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes jawaBirdFlight4 {
+  0% {
+    transform: translate3d(-20px, 0px, 0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.65;
+  }
+  50% {
+    transform: translate3d(calc(55vw), -16px, 0);
+  }
+  88% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate3d(calc(105vw + 30px), 4px, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes jawaBirdFlapFast {
+  0%, 100% {
+    transform: scaleY(1) rotate(0deg);
+  }
+  50% {
+    transform: scaleY(0.4) rotate(-3deg);
+  }
+}
+
+@keyframes jawaBirdFlapMedium {
+  0%, 100% {
+    transform: scaleY(1) rotate(0deg);
+  }
+  50% {
+    transform: scaleY(0.45) rotate(-2deg);
+  }
+}
+
+@keyframes jawaBirdFlapGentle {
+  0%, 100% {
+    transform: scaleY(1) rotate(0deg);
+  }
+  50% {
+    transform: scaleY(0.5) rotate(-3deg);
+  }
+}
+
+@keyframes jawaBirdFlapSoar {
+  0%, 30%, 70%, 100% {
+    transform: scaleY(1) rotate(0deg);
+  }
+  15%, 85% {
+    transform: scaleY(0.55) rotate(-2deg);
+  }
+}
+
+.jawa-bird-flight-1 {
+  animation: jawaBirdFlight1 14s cubic-bezier(0.25, 0.1, 0.25, 1) infinite !important;
+  will-change: transform, opacity;
+}
+
+.jawa-bird-flight-2 {
+  animation: jawaBirdFlight2 16s cubic-bezier(0.25, 0.1, 0.25, 1) infinite 1.8s !important;
+  will-change: transform, opacity;
+}
+
+.jawa-bird-flight-3 {
+  animation: jawaBirdFlight3 17.5s cubic-bezier(0.25, 0.1, 0.25, 1) infinite 3.5s !important;
+  will-change: transform, opacity;
+}
+
+.jawa-bird-flight-4 {
+  animation: jawaBirdFlight4 22s cubic-bezier(0.25, 0.1, 0.25, 1) infinite 7s !important;
+  will-change: transform, opacity;
+}
+
+.jawa-bird-flap-fast {
+  animation: jawaBirdFlapFast 0.55s ease-in-out infinite !important;
+  transform-origin: center center !important;
+  will-change: transform;
+}
+
+.jawa-bird-flap-medium {
+  animation: jawaBirdFlapMedium 0.65s ease-in-out infinite !important;
+  transform-origin: center center !important;
+  will-change: transform;
+}
+
+.jawa-bird-flap-gentle {
+  animation: jawaBirdFlapGentle 0.72s ease-in-out infinite !important;
+  transform-origin: center center !important;
+  will-change: transform;
+}
+
+.jawa-bird-flap-soar {
+  animation: jawaBirdFlapSoar 1.8s ease-in-out infinite !important;
+  transform-origin: center center !important;
+  will-change: transform;
+}
+
 
 
