@@ -64,16 +64,7 @@ export default function TemplateDetailPage() {
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-            <div className="text-right sm:text-left">
-              <span className="text-[10px] uppercase tracking-widest text-neutral-400 block">
-                BASE PRICE
-              </span>
-              <span className="font-serif text-2xl font-light">
-                Rp {template.basePrice.toLocaleString('id-ID')}
-              </span>
-            </div>
-
+          <div className="flex items-center gap-4">
             <Link
               href={`/create?template=${template.id}#step-names`}
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-xs uppercase tracking-widest bg-black text-white hover:bg-neutral-800 transition-colors shadow-sm"

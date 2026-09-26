@@ -4,8 +4,8 @@ import React from 'react';
 import { MinimalNav } from '@/components/marketing/MinimalNav';
 import { MinimalFooter } from '@/components/marketing/MinimalFooter';
 import { DualTrackChoice } from '@/components/marketing/DualTrackChoice';
-import { Check, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { getWhatsAppBespokeUrl } from '@/lib/whatsapp';
 
 export default function ServicesPage() {
   return (
@@ -80,9 +80,17 @@ export default function ServicesPage() {
                 <td className="p-4 sm:p-5 text-center text-neutral-600 bg-[#FAF7F2]/50 border-l border-neutral-100">3 - 7 Hari Kerja</td>
               </tr>
               <tr>
-                <td className="p-4 sm:p-5 font-medium">Estimasi Biaya</td>
-                <td className="p-4 sm:p-5 text-center font-serif text-sm">Mulai Rp 99.000</td>
-                <td className="p-4 sm:p-5 text-center font-serif text-sm font-semibold text-[#8E6E45] bg-[#FAF7F2]/50 border-l border-neutral-100">Mulai Rp 399.000</td>
+                <td className="p-4 sm:p-5 font-medium">Aksi / Cara Mulai</td>
+                <td className="p-4 sm:p-5 text-center">
+                  <Link href="/create" className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider font-semibold text-neutral-900 hover:underline">
+                    Mulai Buat Mandiri →
+                  </Link>
+                </td>
+                <td className="p-4 sm:p-5 text-center bg-[#FAF7F2]/50 border-l border-neutral-100">
+                  <a href={getWhatsAppBespokeUrl()} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider font-semibold text-[#8E6E45] hover:underline">
+                    Konsultasi via WhatsApp →
+                  </a>
+                </td>
               </tr>
             </tbody>
           </table>

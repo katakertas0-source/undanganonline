@@ -256,6 +256,7 @@ export default function BuilderPage() {
   const currentTemplate = templates.find((t) => t.id === invitation.templateId) || templates[0];
   const isBaliHeritage = currentTemplate.id === 'bali-heritage' || currentTemplate.archetype === 'balinese-heritage-luxury';
   const isMahadewi = currentTemplate.id === 'mahadewi-bali' || currentTemplate.archetype === 'balinese-heritage';
+  const isJawaLiving = currentTemplate.id === 'jawa-living-heritage' || currentTemplate.archetype === 'jawa-living-heritage';
 
   const updateInvitationState = (updated: Invitation) => {
     setInvitation(updated);
@@ -614,6 +615,7 @@ export default function BuilderPage() {
                       const isMotion = newTmpl?.archetype === 'cinematic-motion';
                       const isMahadewi = newTmpl.id === 'mahadewi-bali';
                       const isBaliHeritage = newTmpl.id === 'bali-heritage';
+                      const isJawaLiving = newTmpl.id === 'jawa-living-heritage';
 
                       // Synchronize addons with package tier
                       const updatedAddons = targetPkgId === 'pkg-premium'
@@ -628,20 +630,36 @@ export default function BuilderPage() {
                         templateId: e.target.value,
                         activeAddonIds: updatedAddons,
                         coverImageUrl: newTmpl.coverImageUrl,
-                        coverTitle: isBaliHeritage ? 'PAWIWAHAN' : isMahadewi ? 'PAWIWAHAN AGUNG · BALINESE HERITAGE' : invitation.coverTitle,
+                        coverTitle: isJawaLiving || isBaliHeritage ? 'PAWIWAHAN' : isMahadewi ? 'PAWIWAHAN AGUNG · BALINESE HERITAGE' : invitation.coverTitle,
                         colorPreset: newTmpl?.theme.isDark ? 'nocturne-black' : (isMahadewi ? 'warm-linen' : 'offwhite-noir'),
-                        layoutPreset: isBaliHeritage || isMahadewi ? 'framed-portrait' : invitation.layoutPreset,
-                        openingQuote: isBaliHeritage && (!invitation.openingQuote || invitation.openingQuote.includes('celebration of love'))
+                        layoutPreset: isJawaLiving || isBaliHeritage || isMahadewi ? 'framed-portrait' : invitation.layoutPreset,
+                        openingQuote: isJawaLiving && (!invitation.openingQuote || invitation.openingQuote.includes('celebration of love') || invitation.openingQuote.includes('Sang Hyang Widhi'))
+                          ? 'Awit saking berkah rahmat Gusti Kang Murbeng Dumadi, lumantar tulusaning tresna, kula kekalih badhe ngleksanani upacara Pawiwahan Ageng.'
+                          : isBaliHeritage && (!invitation.openingQuote || invitation.openingQuote.includes('celebration of love'))
                           ? 'Kami dipertemukan oleh waktu, dipersatukan oleh cinta, dan akan melangkah bersama dalam ikatan suci Pawiwahan.'
                           : isMahadewi && (!invitation.openingQuote || invitation.openingQuote.includes('celebration of love'))
                           ? 'Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud menyelenggarakan Upacara Manusa Yadnya Pawiwahan putra-putri kami.'
                           : invitation.openingQuote,
-                        holyVerse: isBaliHeritage && (!invitation.holyVerse || invitation.holyVerse.includes('Two lives'))
+                        holyVerse: isJawaLiving && (!invitation.holyVerse || invitation.holyVerse.includes('Two lives'))
+                          ? 'Dua insan, satu perjalanan, dalam restu dan berkah luhur.'
+                          : isBaliHeritage && (!invitation.holyVerse || invitation.holyVerse.includes('Two lives'))
                           ? 'Dua Hati, Satu Perjalanan, Dalam Restu Semesta.'
                           : isMahadewi && (!invitation.holyVerse || invitation.holyVerse.includes('Two lives'))
                           ? 'Ihaiva stam ma vi yaustam visvam ayur vyasnutam kridantau putrair naptrbhih modamanau sve grhe. (Rg Veda X.85.42) — Wahai pasangan pengantin, semoga senantiasa bersatu dalam cinta kasih dan damai abadi.'
                           : invitation.holyVerse,
-                        couple: isBaliHeritage && (invitation.couple.groomPhotoUrl.includes('unsplash') || invitation.couple.groomName === 'Julian Pratama')
+                        couple: isJawaLiving && (invitation.couple.groomPhotoUrl.includes('unsplash') || invitation.couple.groomName === 'Julian Pratama')
+                          ? {
+                              ...invitation.couple,
+                              groomName: 'Raden Mas Danang Wicaksono, S.T.',
+                              groomNickname: 'Danang',
+                              groomPhotoUrl: '/images/jawa-heritage-cover.jpg',
+                              groomLabelBadge: 'Mempelai Pria',
+                              brideName: 'Raden Ajeng Sekar Kinanti, M.Ds.',
+                              brideNickname: 'Sekar',
+                              bridePhotoUrl: '/images/jawa-heritage-secondary.jpg',
+                              brideLabelBadge: 'Mempelai Wanita',
+                            }
+                          : isBaliHeritage && (invitation.couple.groomPhotoUrl.includes('unsplash') || invitation.couple.groomName === 'Julian Pratama')
                           ? {
                               ...invitation.couple,
                               groomName: 'I Putu Wira Yasa, S.T.',
@@ -670,14 +688,11 @@ export default function BuilderPage() {
                     }}
                     className="w-full px-3.5 py-2.5 text-xs border border-neutral-300 outline-none bg-white font-medium"
                   >
-                    {templates.map((t) => {
-                      const isPremium = t.basePrice === 199000;
-                      return (
-                        <option key={t.id} value={t.id}>
-                          {t.name} ({t.category}) — {isPremium ? 'Paket Premium (Rp 199.000)' : 'Paket Essential (Rp 99.000)'}
-                        </option>
-                      );
-                    })}
+                    {templates.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name} ({t.category})
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -763,7 +778,7 @@ export default function BuilderPage() {
                     </span>
                     <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                       {[
-                        ...(isBaliHeritage || isMahadewi ? ['PAWIWAHAN', 'PAWIWAHAN AGUNG'] : []),
+                        ...(isJawaLiving || isBaliHeritage || isMahadewi ? ['PAWIWAHAN', 'PAWIWAHAN AGUNG'] : []),
                         'THE WEDDING CELEBRATION',
                         'THE WEDDING OF',
                         'WALIMATUL \'URS',
@@ -791,448 +806,468 @@ export default function BuilderPage() {
                   </div>
                 </div>
 
-                {/* Cover Photo: Direct File Upload & Visual Studio Presets (No URL input!) */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs uppercase tracking-widest text-[#8C827A] font-medium">
-                      Foto Cover Utama
-                    </label>
-                    <span className="text-[10px] text-[#8C827A]">JPG, PNG, WebP</span>
-                  </div>
-
-                  <div className="flex items-center gap-3.5 p-3.5 bg-[#FAF7F2] border border-[#E2DDD5]">
-                    {/* Visual Thumbnail */}
-                    <div className="w-16 h-20 bg-neutral-200 border border-[#DDD5C7] overflow-hidden shrink-0 relative shadow-xs">
-                      {invitation.coverImageUrl ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={invitation.coverImageUrl}
-                          alt="Cover Thumbnail"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-neutral-400">
-                          <ImageIcon className="w-6 h-6" />
-                        </div>
-                      )}
+                {/* Context-Aware Cover Section: If template uses an Illustrated Art Cover (e.g. Jawa Living Heritage), don't show Cover Photo or Video Background */}
+                {currentTemplate.id === 'jawa-living-heritage' ? (
+                  <div className="p-4 bg-[#FAF7F2] border border-[#E2DDD5] space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#8C6D3B]" />
+                      <span className="text-[10px] uppercase tracking-widest text-[#8C6D3B] font-semibold">
+                        Seni Ilustrasi Keraton (No Cover Photo)
+                      </span>
                     </div>
-
-                    {/* Upload Actions */}
-                    <div className="flex-1 space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-[#2A2522] text-[#FAF8F5] hover:bg-[#3D3834] transition-colors shadow-xs">
-                          <Upload className="w-3.5 h-3.5" />
-                          <span>Pilih Foto dari Galeri</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const compressed = await compressImageFile(file);
-                                if (compressed) {
-                                  updateInvitationState({ ...invitation, coverImageUrl: compressed });
-                                }
-                              }
-                            }}
-                          />
+                    <p className="text-xs text-[#5C554E] leading-relaxed">
+                      Cover template <strong>{currentTemplate.name}</strong> menggunakan panggung seni ilustrasi klasik (Pendopo Joglo Dalem Agung &amp; Gunungan Wayang).
+                    </p>
+                    <p className="text-[11px] text-[#8C827A] font-light">
+                      Foto mempelai ditampilkan secara anggun pada tab <strong>Mempelai</strong> (Sang Kakung &amp; Sang Putri) dan tab <strong>Galeri</strong> di atas.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Cover Photo: Direct File Upload & Visual Studio Presets (No URL input!) */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs uppercase tracking-widest text-[#8C827A] font-medium">
+                          Foto Cover Utama
                         </label>
-
-                        {invitation.coverImageUrl && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setCropModalState({
-                                isOpen: true,
-                                imageUrl: invitation.coverImageUrl,
-                                target: 'cover',
-                                ratio: '4:5',
-                                title: 'Crop & Atur Safe Angle Foto Cover',
-                              })
-                            }
-                            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-white text-[#2A2522] border border-[#DDD5C7] hover:border-[#8C6D3B] hover:text-[#8C6D3B] transition-colors shadow-xs"
-                            title="Atur framing, zoom, dan posisi aman foto cover"
-                          >
-                            <Crop className="w-3.5 h-3.5 text-[#8C6D3B]" />
-                            <span>Crop / Atur Angle</span>
-                          </button>
-                        )}
-
-                        {invitation.coverImageUrl && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateInvitationState({
-                                ...invitation,
-                                coverImageUrl:
-                                  'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop',
-                              })
-                            }
-                            className="px-2.5 py-2 text-[11px] text-[#7C756E] hover:text-[#2A2522] border border-[#DDD5C7] bg-white hover:border-[#A8A196] transition-colors"
-                          >
-                            Reset
-                          </button>
-                        )}
+                        <span className="text-[10px] text-[#8C827A]">JPG, PNG, WebP</span>
                       </div>
 
-                      <p className="text-[10px] text-[#8C827A] leading-relaxed font-light">
-                        Pilih foto mempelai dari smartphone atau laptop Anda untuk langsung ditampilkan di cover undangan.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Curated Preset Sample Photos (Collapsible to keep mobile view clean) */}
-                  <details className="group pt-1">
-                    <summary className="text-[10px] uppercase tracking-wider text-[#8C827A] font-medium cursor-pointer flex items-center justify-between hover:text-black py-1 select-none">
-                      <span>Atau Pilih Contoh Foto Studio Bawaan</span>
-                      <span className="text-[9px] text-neutral-400 group-open:rotate-180 transition-transform">▼</span>
-                    </summary>
-                    <div className="grid grid-cols-4 gap-2 pt-2">
-                      {[
-                        {
-                          label: 'Beach Romance',
-                          url: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop',
-                        },
-                        {
-                          label: 'Fine Art Studio',
-                          url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop',
-                        },
-                        {
-                          label: 'Outdoor Sunset',
-                          url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop',
-                        },
-                        {
-                          label: 'Classic Black Tie',
-                          url: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=1200&auto=format&fit=crop',
-                        },
-                      ].map((preset, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => updateInvitationState({ ...invitation, coverImageUrl: preset.url })}
-                          className={`relative aspect-[3/4] overflow-hidden border transition-all ${
-                            invitation.coverImageUrl === preset.url
-                              ? 'border-[#2A2522] ring-2 ring-[#2A2522]/30'
-                              : 'border-[#E2DDD5] opacity-75 hover:opacity-100 hover:border-[#A8A196]'
-                          }`}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={preset.url} alt={preset.label} className="w-full h-full object-cover" />
-                          <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[8px] py-0.5 px-1 truncate text-center font-medium">
-                            {preset.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </details>
-                </div>
-
-                {/* Living Video Background: Controls (if active or cinematic-motion) OR Activation Card (if inactive) */}
-                {(() => {
-                  const hasVideoBg = currentTemplate.archetype === 'cinematic-motion' || invitation.activeAddonIds.includes('living-video-bg') || Boolean(invitation.coverVideoUrl);
-                  
-                  if (hasVideoBg) {
-                    return (
-                      <div className="p-5 bg-[#FAF7F2] border border-[#E2DDD5] space-y-5 rounded-none shadow-xs">
-                        {/* Header */}
-                        <div className="flex items-center justify-between pb-3 border-b border-[#EAE4DB]">
-                          <div className="flex items-center gap-2">
-                            <label className="text-xs uppercase tracking-wider text-[#2A2522] font-semibold flex items-center gap-2">
-                              <span>Living Video Background</span>
-                            </label>
-                            {currentTemplate.archetype !== 'cinematic-motion' && (
-                              <span className="text-[9px] uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-300 px-2 py-0.5 font-semibold">
-                                Add-on Aktif (+Rp 45.000)
-                              </span>
-                            )}
-                          </div>
-                          {currentTemplate.archetype !== 'cinematic-motion' ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const updatedAddons = invitation.activeAddonIds.filter((id) => id !== 'living-video-bg');
-                                updateInvitationState({
-                                  ...invitation,
-                                  activeAddonIds: updatedAddons,
-                                  coverVideoUrl: undefined,
-                                });
-                              }}
-                              className="text-[10px] text-red-600 hover:text-red-700 underline underline-offset-2 transition-colors cursor-pointer"
-                            >
-                              Nonaktifkan Add-on
-                            </button>
+                      <div className="flex items-center gap-3.5 p-3.5 bg-[#FAF7F2] border border-[#E2DDD5]">
+                        {/* Visual Thumbnail */}
+                        <div className="w-16 h-20 bg-neutral-200 border border-[#DDD5C7] overflow-hidden shrink-0 relative shadow-xs">
+                          {invitation.coverImageUrl ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                              src={invitation.coverImageUrl}
+                              alt="Cover Thumbnail"
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
-                            <span className="text-[9px] uppercase tracking-widest text-[#8C6D3B] bg-[#F2ECE1] border border-[#DDD4C7] px-2 py-0.5 font-medium">
-                              Bawaan Template
-                            </span>
+                            <div className="w-full h-full flex items-center justify-center text-neutral-400">
+                              <ImageIcon className="w-6 h-6" />
+                            </div>
                           )}
                         </div>
 
-                    {/* Video URL */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-[#7C756E] uppercase tracking-wider text-[10px] font-medium flex items-center gap-1.5">
-                          <YouTubeIcon className="w-3.5 h-3.5 text-red-600" />
-                          <span>Link Video (YouTube atau File MP4)</span>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateInvitationState({ ...invitation, coverVideoUrl: '/videos/elodie-bg.mp4' })}
-                          className="text-[#8C6D3B] hover:text-[#2A2522] underline underline-offset-2 text-[10px] transition-colors"
-                        >
-                          Reset ke Default Video
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        value={invitation.coverVideoUrl || ''}
-                        onChange={(e) => updateInvitationState({ ...invitation, coverVideoUrl: e.target.value })}
-                        className="w-full px-3 py-2 text-xs bg-white border border-[#DCD6CC] text-[#2A2522] outline-none focus:border-[#8C6D3B] font-mono"
-                        placeholder="Paste link YouTube (youtube.com/watch?v=... / youtu.be/...) atau URL .mp4"
-                      />
+                        {/* Upload Actions */}
+                        <div className="flex-1 space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-[#2A2522] text-[#FAF8F5] hover:bg-[#3D3834] transition-colors shadow-xs">
+                              <Upload className="w-3.5 h-3.5" />
+                              <span>Pilih Foto dari Galeri</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const compressed = await compressImageFile(file);
+                                    if (compressed) {
+                                      updateInvitationState({ ...invitation, coverImageUrl: compressed });
+                                    }
+                                  }
+                                }}
+                              />
+                            </label>
 
-                      {/* Quick Video Presets */}
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        <span className="text-[9px] uppercase tracking-wider text-[#8C827A] w-full block">
-                          Pilihan Cepat:
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateInvitationState({ ...invitation, coverVideoUrl: '/videos/elodie-bg.mp4' })}
-                          className={`px-2 py-1 text-[10px] border transition-colors ${
-                            invitation.coverVideoUrl === '/videos/elodie-bg.mp4'
-                              ? 'bg-[#2A2522] text-white border-[#2A2522]'
-                              : 'bg-white border-[#DDD5C7] text-[#5C554E] hover:border-[#A8A196]'
-                          }`}
-                        >
-                          Beach Wedding (Default .MP4)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateInvitationState({
-                              ...invitation,
-                              coverVideoUrl: 'https://www.youtube.com/watch?v=ScMzIvxBSi4',
-                            })
-                          }
-                          className={`px-2 py-1 text-[10px] border transition-colors flex items-center gap-1 ${
-                            invitation.coverVideoUrl === 'https://www.youtube.com/watch?v=ScMzIvxBSi4'
-                              ? 'bg-[#2A2522] text-white border-[#2A2522]'
-                              : 'bg-white border-[#DDD5C7] text-[#5C554E] hover:border-[#A8A196]'
-                          }`}
-                        >
-                          <YouTubeIcon className="w-3 h-3 text-red-500" />
-                          <span>Cinematic Romance (YouTube)</span>
-                        </button>
-                      </div>
-                    </div>
+                            {invitation.coverImageUrl && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setCropModalState({
+                                    isOpen: true,
+                                    imageUrl: invitation.coverImageUrl,
+                                    target: 'cover',
+                                    ratio: '4:5',
+                                    title: 'Crop & Atur Safe Angle Foto Cover',
+                                  })
+                                }
+                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-white text-[#2A2522] border border-[#DDD5C7] hover:border-[#8C6D3B] hover:text-[#8C6D3B] transition-colors shadow-xs"
+                                title="Atur framing, zoom, dan posisi aman foto cover"
+                              >
+                                <Crop className="w-3.5 h-3.5 text-[#8C6D3B]" />
+                                <span>Crop / Atur Angle</span>
+                              </button>
+                            )}
 
-                    {/* Overlay Control 1: Darkness / Opacity Slider */}
-                    <div className="space-y-2 pt-2 border-t border-[#EAE4DB]">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#2A2522] font-medium">Tingkat Kegelapan Overlay</span>
-                        <span className="font-mono text-[#2A2522] bg-white border border-[#DDD5C7] px-2 py-0.5 text-[11px] font-medium">
-                          {invitation.videoOverlayOpacity ?? 40}%
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={10}
-                        max={85}
-                        step={5}
-                        value={invitation.videoOverlayOpacity ?? 40}
-                        onChange={(e) =>
-                          updateInvitationState({
-                            ...invitation,
-                            videoOverlayOpacity: Number(e.target.value),
-                          })
-                        }
-                        className="w-full accent-[#2A2522] cursor-pointer h-1.5 bg-[#E6E0D6] rounded-lg"
-                      />
-                      <div className="flex items-center justify-between text-[9px] text-[#8C827A]">
-                        <span>10% (Lebih Jernih)</span>
-                        <span>85% (Lebih Gelap)</span>
+                            {invitation.coverImageUrl && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateInvitationState({
+                                    ...invitation,
+                                    coverImageUrl:
+                                      'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop',
+                                  })
+                                }
+                                className="px-2.5 py-2 text-[11px] text-[#7C756E] hover:text-[#2A2522] border border-[#DDD5C7] bg-white hover:border-[#A8A196] transition-colors"
+                              >
+                                Reset
+                              </button>
+                            )}
+                          </div>
+
+                          <p className="text-[10px] text-[#8C827A] leading-relaxed font-light">
+                            Pilih foto mempelai dari smartphone atau laptop Anda untuk langsung ditampilkan di cover undangan.
+                          </p>
+                        </div>
                       </div>
 
-                      {/* Quick Presets for Opacity */}
-                      <div className="flex gap-2 pt-1">
-                        {[
-                          { label: 'Jernih (20%)', val: 20 },
-                          { label: 'Seimbang (40%)', val: 40 },
-                          { label: 'Kontras (65%)', val: 65 },
-                        ].map((p) => (
-                          <button
-                            key={p.val}
-                            type="button"
-                            onClick={() => updateInvitationState({ ...invitation, videoOverlayOpacity: p.val })}
-                            className={`flex-1 py-1.5 text-[10px] border transition-colors ${
-                              (invitation.videoOverlayOpacity ?? 40) === p.val
-                                ? 'bg-[#2A2522] border-[#2A2522] text-[#FAF8F5] font-medium'
-                                : 'bg-white border-[#DCD6CC] text-[#5C554E] hover:border-[#A8A196]'
-                            }`}
-                          >
-                            {p.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Overlay Control 2: Glass Blur Slider */}
-                    <div className="space-y-2 pt-2 border-t border-[#EAE4DB]">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#2A2522] font-medium">Efek Kaca Frosted (Glass Blur)</span>
-                        <span className="font-mono text-[#2A2522] bg-white border border-[#DDD5C7] px-2 py-0.5 text-[11px] font-medium">
-                          {invitation.videoOverlayBlur ?? 8}px
-                        </span>
-                      </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={20}
-                        step={1}
-                        value={invitation.videoOverlayBlur ?? 8}
-                        onChange={(e) =>
-                          updateInvitationState({
-                            ...invitation,
-                            videoOverlayBlur: Number(e.target.value),
-                          })
-                        }
-                        className="w-full accent-[#2A2522] cursor-pointer h-1.5 bg-[#E6E0D6] rounded-lg"
-                      />
-                      <div className="flex items-center justify-between text-[9px] text-[#8C827A]">
-                        <span>0px (Bening)</span>
-                        <span>20px (Kaca Buram Kuat)</span>
-                      </div>
-
-                      {/* Quick Presets for Blur */}
-                      <div className="flex gap-2 pt-1">
-                        {[
-                          { label: 'Bening (0px)', val: 0 },
-                          { label: 'Soft (8px)', val: 8 },
-                          { label: 'Frosted (16px)', val: 16 },
-                        ].map((p) => (
-                          <button
-                            key={p.val}
-                            type="button"
-                            onClick={() => updateInvitationState({ ...invitation, videoOverlayBlur: p.val })}
-                            className={`flex-1 py-1.5 text-[10px] border transition-colors ${
-                              (invitation.videoOverlayBlur ?? 8) === p.val
-                                ? 'bg-[#2A2522] border-[#2A2522] text-[#FAF8F5] font-medium'
-                                : 'bg-white border-[#DCD6CC] text-[#5C554E] hover:border-[#A8A196]'
-                            }`}
-                          >
-                            {p.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Overlay Control 3: Color Tone / Tint */}
-                    <div className="space-y-2 pt-2 border-t border-[#EAE4DB]">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-[#2A2522] font-medium">Tone Nuansa Warna</span>
-                        <span className="text-[10px] text-[#7C756E] capitalize font-medium">
-                          {invitation.videoOverlayTint === 'warm-mocha'
-                            ? 'Warm Mocha'
-                            : invitation.videoOverlayTint === 'midnight-navy'
-                            ? 'Midnight Navy'
-                            : 'Noir Obsidian'}
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[
-                          {
-                            id: 'noir' as const,
-                            name: 'Noir',
-                            subtitle: 'Obsidian Black',
-                            color: '#1A1817',
-                          },
-                          {
-                            id: 'warm-mocha' as const,
-                            name: 'Mocha',
-                            subtitle: 'Warm Romance',
-                            color: '#382216',
-                          },
-                          {
-                            id: 'midnight-navy' as const,
-                            name: 'Midnight',
-                            subtitle: 'Deep Navy',
-                            color: '#121A28',
-                          },
-                        ].map((t) => {
-                          const isSelected = (invitation.videoOverlayTint || 'noir') === t.id;
-                          return (
+                      {/* Curated Preset Sample Photos (Collapsible to keep mobile view clean) */}
+                      <details className="group pt-1">
+                        <summary className="text-[10px] uppercase tracking-wider text-[#8C827A] font-medium cursor-pointer flex items-center justify-between hover:text-black py-1 select-none">
+                          <span>Atau Pilih Contoh Foto Studio Bawaan</span>
+                          <span className="text-[9px] text-neutral-400 group-open:rotate-180 transition-transform">▼</span>
+                        </summary>
+                        <div className="grid grid-cols-4 gap-2 pt-2">
+                          {[
+                            {
+                              label: 'Beach Romance',
+                              url: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1200&auto=format&fit=crop',
+                            },
+                            {
+                              label: 'Fine Art Studio',
+                              url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=1200&auto=format&fit=crop',
+                            },
+                            {
+                              label: 'Outdoor Sunset',
+                              url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=1200&auto=format&fit=crop',
+                            },
+                            {
+                              label: 'Classic Black Tie',
+                              url: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=1200&auto=format&fit=crop',
+                            },
+                          ].map((preset, idx) => (
                             <button
-                              key={t.id}
+                              key={idx}
                               type="button"
-                              onClick={() => updateInvitationState({ ...invitation, videoOverlayTint: t.id })}
-                              className={`p-2.5 text-left border transition-all flex flex-col justify-between ${
-                                isSelected
-                                  ? 'border-[#2A2522] bg-white shadow-xs ring-1 ring-[#2A2522]'
-                                  : 'border-[#DCD6CC] bg-white/70 hover:border-[#A8A196]'
+                              onClick={() => updateInvitationState({ ...invitation, coverImageUrl: preset.url })}
+                              className={`relative aspect-[3/4] overflow-hidden border transition-all ${
+                                invitation.coverImageUrl === preset.url
+                                  ? 'border-[#2A2522] ring-2 ring-[#2A2522]/30'
+                                  : 'border-[#E2DDD5] opacity-75 hover:opacity-100 hover:border-[#A8A196]'
                               }`}
                             >
-                              <div className="flex items-center gap-1.5 mb-1.5">
-                                <span
-                                  className="w-3.5 h-3.5 rounded-full border border-neutral-300 shrink-0 shadow-inner"
-                                  style={{ backgroundColor: t.color }}
-                                />
-                                <span className={`text-[11px] font-medium ${isSelected ? 'text-[#2A2522]' : 'text-[#5C554E]'}`}>
-                                  {t.name}
-                                </span>
-                              </div>
-                              <span className="text-[9px] text-[#8C827A]">{t.subtitle}</span>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={preset.url} alt={preset.label} className="w-full h-full object-cover" />
+                              <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[8px] py-0.5 px-1 truncate text-center font-medium">
+                                {preset.label}
+                              </span>
                             </button>
-                          );
-                        })}
-                      </div>
+                          ))}
+                        </div>
+                      </details>
                     </div>
 
-                    <p className="text-[11px] text-[#7C756E] leading-relaxed border-t border-[#EAE4DB] pt-3 font-light">
-                      ✨ Pengaturan di atas diterapkan langsung ke tampilan layar di sebelah kanan.
-                    </p>
-                  </div>
-                    );
-                  }
+                    {/* Living Video Background: Controls (if active or cinematic-motion) OR Activation Card (if inactive) */}
+                    {(() => {
+                      const hasVideoBg = currentTemplate.archetype === 'cinematic-motion' || invitation.activeAddonIds.includes('living-video-bg') || Boolean(invitation.coverVideoUrl);
+                      
+                      if (hasVideoBg) {
+                        return (
+                          <div className="p-5 bg-[#FAF7F2] border border-[#E2DDD5] space-y-5 rounded-none shadow-xs">
+                            {/* Header */}
+                            <div className="flex items-center justify-between pb-3 border-b border-[#EAE4DB]">
+                              <div className="flex items-center gap-2">
+                                <label className="text-xs uppercase tracking-wider text-[#2A2522] font-semibold flex items-center gap-2">
+                                  <span>Living Video Background</span>
+                                </label>
+                                {currentTemplate.archetype !== 'cinematic-motion' && (
+                                  <span className="text-[9px] uppercase tracking-widest text-emerald-800 bg-emerald-50 border border-emerald-300 px-2 py-0.5 font-semibold">
+                                    Add-on Aktif
+                                  </span>
+                                )}
+                              </div>
+                              {currentTemplate.archetype !== 'cinematic-motion' ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updatedAddons = invitation.activeAddonIds.filter((id) => id !== 'living-video-bg');
+                                    updateInvitationState({
+                                      ...invitation,
+                                      activeAddonIds: updatedAddons,
+                                      coverVideoUrl: undefined,
+                                    });
+                                  }}
+                                  className="text-[10px] text-red-600 hover:text-red-700 underline underline-offset-2 transition-colors cursor-pointer"
+                                >
+                                  Nonaktifkan Add-on
+                                </button>
+                              ) : (
+                                <span className="text-[9px] uppercase tracking-widest text-[#8C6D3B] bg-[#F2ECE1] border border-[#DDD4C7] px-2 py-0.5 font-medium">
+                                  Bawaan Template
+                                </span>
+                              )}
+                            </div>
 
-                  // Non-motion template without active living video addon: show compact activation card
-                  return (
-                    <div className="p-3 bg-[#1C1917] text-[#FAF8F5] border border-neutral-800 rounded-sm flex items-center justify-between gap-3 shadow-xs">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                          <span className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold">
-                            Opsional
-                          </span>
+                        {/* Video URL */}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-[#7C756E] uppercase tracking-wider text-[10px] font-medium flex items-center gap-1.5">
+                              <YouTubeIcon className="w-3.5 h-3.5 text-red-600" />
+                              <span>Link Video (YouTube atau File MP4)</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateInvitationState({ ...invitation, coverVideoUrl: '/videos/elodie-bg.mp4' })}
+                              className="text-[#8C6D3B] hover:text-[#2A2522] underline underline-offset-2 text-[10px] transition-colors"
+                            >
+                              Reset ke Default Video
+                            </button>
+                          </div>
+                          <input
+                            type="text"
+                            value={invitation.coverVideoUrl || ''}
+                            onChange={(e) => updateInvitationState({ ...invitation, coverVideoUrl: e.target.value })}
+                            className="w-full px-3 py-2 text-xs bg-white border border-[#DCD6CC] text-[#2A2522] outline-none focus:border-[#8C6D3B] font-mono"
+                            placeholder="Paste link YouTube (youtube.com/watch?v=... / youtu.be/...) atau URL .mp4"
+                          />
+
+                          {/* Quick Video Presets */}
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            <span className="text-[9px] uppercase tracking-wider text-[#8C827A] w-full block">
+                              Pilihan Cepat:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateInvitationState({ ...invitation, coverVideoUrl: '/videos/elodie-bg.mp4' })}
+                              className={`px-2 py-1 text-[10px] border transition-colors ${
+                                invitation.coverVideoUrl === '/videos/elodie-bg.mp4'
+                                  ? 'bg-[#2A2522] text-white border-[#2A2522]'
+                                  : 'bg-white border-[#DDD5C7] text-[#5C554E] hover:border-[#A8A196]'
+                              }`}
+                            >
+                              Beach Wedding (Default .MP4)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                updateInvitationState({
+                                  ...invitation,
+                                  coverVideoUrl: 'https://www.youtube.com/watch?v=ScMzIvxBSi4',
+                                })
+                              }
+                              className={`px-2 py-1 text-[10px] border transition-colors flex items-center gap-1 ${
+                                invitation.coverVideoUrl === 'https://www.youtube.com/watch?v=ScMzIvxBSi4'
+                                  ? 'bg-[#2A2522] text-white border-[#2A2522]'
+                                  : 'bg-white border-[#DDD5C7] text-[#5C554E] hover:border-[#A8A196]'
+                              }`}
+                            >
+                              <YouTubeIcon className="w-3 h-3 text-red-500" />
+                              <span>Cinematic Romance (YouTube)</span>
+                            </button>
+                          </div>
                         </div>
-                        <h5 className="font-serif text-xs sm:text-sm font-medium text-white truncate">
-                          Living Video Background
-                        </h5>
-                        <p className="text-[10px] text-neutral-400 truncate">
-                          Ubah background jadi video sinematik bergerak
+
+                        {/* Overlay Control 1: Darkness / Opacity Slider */}
+                        <div className="space-y-2 pt-2 border-t border-[#EAE4DB]">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-[#2A2522] font-medium">Tingkat Kegelapan Overlay</span>
+                            <span className="font-mono text-[#2A2522] bg-white border border-[#DDD5C7] px-2 py-0.5 text-[11px] font-medium">
+                              {invitation.videoOverlayOpacity ?? 40}%
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={10}
+                            max={85}
+                            step={5}
+                            value={invitation.videoOverlayOpacity ?? 40}
+                            onChange={(e) =>
+                              updateInvitationState({
+                                ...invitation,
+                                videoOverlayOpacity: Number(e.target.value),
+                              })
+                            }
+                            className="w-full accent-[#2A2522] cursor-pointer h-1.5 bg-[#E6E0D6] rounded-lg"
+                          />
+                          <div className="flex items-center justify-between text-[9px] text-[#8C827A]">
+                            <span>10% (Lebih Jernih)</span>
+                            <span>85% (Lebih Gelap)</span>
+                          </div>
+
+                          {/* Quick Presets for Opacity */}
+                          <div className="flex gap-2 pt-1">
+                            {[
+                              { label: 'Jernih (20%)', val: 20 },
+                              { label: 'Seimbang (40%)', val: 40 },
+                              { label: 'Kontras (65%)', val: 65 },
+                            ].map((p) => (
+                              <button
+                                key={p.val}
+                                type="button"
+                                onClick={() => updateInvitationState({ ...invitation, videoOverlayOpacity: p.val })}
+                                className={`flex-1 py-1.5 text-[10px] border transition-colors ${
+                                  (invitation.videoOverlayOpacity ?? 40) === p.val
+                                    ? 'bg-[#2A2522] border-[#2A2522] text-[#FAF8F5] font-medium'
+                                    : 'bg-white border-[#DCD6CC] text-[#5C554E] hover:border-[#A8A196]'
+                                }`}
+                              >
+                                {p.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Overlay Control 2: Glass Blur Slider */}
+                        <div className="space-y-2 pt-2 border-t border-[#EAE4DB]">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-[#2A2522] font-medium">Efek Kaca Frosted (Glass Blur)</span>
+                            <span className="font-mono text-[#2A2522] bg-white border border-[#DDD5C7] px-2 py-0.5 text-[11px] font-medium">
+                              {invitation.videoOverlayBlur ?? 8}px
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={0}
+                            max={20}
+                            step={1}
+                            value={invitation.videoOverlayBlur ?? 8}
+                            onChange={(e) =>
+                              updateInvitationState({
+                                ...invitation,
+                                videoOverlayBlur: Number(e.target.value),
+                              })
+                            }
+                            className="w-full accent-[#2A2522] cursor-pointer h-1.5 bg-[#E6E0D6] rounded-lg"
+                          />
+                          <div className="flex items-center justify-between text-[9px] text-[#8C827A]">
+                            <span>0px (Bening)</span>
+                            <span>20px (Kaca Buram Kuat)</span>
+                          </div>
+
+                          {/* Quick Presets for Blur */}
+                          <div className="flex gap-2 pt-1">
+                            {[
+                              { label: 'Bening (0px)', val: 0 },
+                              { label: 'Soft (8px)', val: 8 },
+                              { label: 'Frosted (16px)', val: 16 },
+                            ].map((p) => (
+                              <button
+                                key={p.val}
+                                type="button"
+                                onClick={() => updateInvitationState({ ...invitation, videoOverlayBlur: p.val })}
+                                className={`flex-1 py-1.5 text-[10px] border transition-colors ${
+                                  (invitation.videoOverlayBlur ?? 8) === p.val
+                                    ? 'bg-[#2A2522] border-[#2A2522] text-[#FAF8F5] font-medium'
+                                    : 'bg-white border-[#DCD6CC] text-[#5C554E] hover:border-[#A8A196]'
+                                }`}
+                              >
+                                {p.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Overlay Control 3: Color Tone / Tint */}
+                        <div className="space-y-2 pt-2 border-t border-[#EAE4DB]">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-[#2A2522] font-medium">Tone Nuansa Warna</span>
+                            <span className="text-[10px] text-[#7C756E] capitalize font-medium">
+                              {invitation.videoOverlayTint === 'warm-mocha'
+                                ? 'Warm Mocha'
+                                : invitation.videoOverlayTint === 'midnight-navy'
+                                ? 'Midnight Navy'
+                                : 'Noir Obsidian'}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              {
+                                id: 'noir' as const,
+                                name: 'Noir',
+                                subtitle: 'Obsidian Black',
+                                color: '#1A1817',
+                              },
+                              {
+                                id: 'warm-mocha' as const,
+                                name: 'Mocha',
+                                subtitle: 'Warm Romance',
+                                color: '#382216',
+                              },
+                              {
+                                id: 'midnight-navy' as const,
+                                name: 'Midnight',
+                                subtitle: 'Deep Navy',
+                                color: '#121A28',
+                              },
+                            ].map((t) => {
+                              const isSelected = (invitation.videoOverlayTint || 'noir') === t.id;
+                              return (
+                                <button
+                                  key={t.id}
+                                  type="button"
+                                  onClick={() => updateInvitationState({ ...invitation, videoOverlayTint: t.id })}
+                                  className={`p-2.5 text-left border transition-all flex flex-col justify-between ${
+                                    isSelected
+                                      ? 'border-[#2A2522] bg-white shadow-xs ring-1 ring-[#2A2522]'
+                                      : 'border-[#DCD6CC] bg-white/70 hover:border-[#A8A196]'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-1.5 mb-1.5">
+                                    <span
+                                      className="w-3.5 h-3.5 rounded-full border border-neutral-300 shrink-0 shadow-inner"
+                                      style={{ backgroundColor: t.color }}
+                                    />
+                                    <span className={`text-[11px] font-medium ${isSelected ? 'text-[#2A2522]' : 'text-[#5C554E]'}`}>
+                                      {t.name}
+                                    </span>
+                                  </div>
+                                  <span className="text-[9px] text-[#8C827A]">{t.subtitle}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <p className="text-[11px] text-[#7C756E] leading-relaxed border-t border-[#EAE4DB] pt-3 font-light">
+                          ✨ Pengaturan di atas diterapkan langsung ke tampilan layar di sebelah kanan.
                         </p>
                       </div>
+                        );
+                      }
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const updatedAddons = invitation.activeAddonIds.includes('living-video-bg')
-                            ? invitation.activeAddonIds
-                            : [...invitation.activeAddonIds, 'living-video-bg'];
-                          updateInvitationState({
-                            ...invitation,
-                            activeAddonIds: updatedAddons,
-                            coverVideoUrl: invitation.coverVideoUrl || '/videos/elodie-bg.mp4',
-                          });
-                        }}
-                        className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider bg-[#C5A880] text-black hover:bg-[#D4AF37] transition-all shrink-0 rounded-xs"
-                      >
-                        +Rp 45.000
-                      </button>
-                    </div>
-                  );
-                })()}
+                      // Non-motion template without active living video addon: show compact activation card
+                      return (
+                        <div className="p-3 bg-[#1C1917] text-[#FAF8F5] border border-neutral-800 rounded-sm flex items-center justify-between gap-3 shadow-xs">
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                              <span className="text-[10px] uppercase tracking-wider text-amber-400 font-semibold">
+                                Opsional
+                              </span>
+                            </div>
+                            <h5 className="font-serif text-xs sm:text-sm font-medium text-white truncate">
+                              Living Video Background
+                            </h5>
+                            <p className="text-[10px] text-neutral-400 truncate">
+                              Ubah background jadi video sinematik bergerak
+                            </p>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updatedAddons = invitation.activeAddonIds.includes('living-video-bg')
+                                ? invitation.activeAddonIds
+                                : [...invitation.activeAddonIds, 'living-video-bg'];
+                              updateInvitationState({
+                                ...invitation,
+                                activeAddonIds: updatedAddons,
+                                coverVideoUrl: invitation.coverVideoUrl || '/videos/elodie-bg.mp4',
+                              });
+                            }}
+                            className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider bg-[#C5A880] text-black hover:bg-[#D4AF37] transition-all shrink-0 rounded-xs"
+                          >
+                            Aktifkan
+                          </button>
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
 
                 {/* 5. Music / Audio Background Controller (Available for ALL PACKAGES) */}
                 <div className="p-4 bg-[#FAF7F2] border border-[#E2DDD5] space-y-4">

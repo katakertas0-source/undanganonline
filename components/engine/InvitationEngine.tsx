@@ -20,6 +20,7 @@ import { BalineseOrnamentalDivider } from '@/components/ui/BalineseOrnaments';
 import { GuestPassCard } from './GuestPassCard';
 import { DocumentationGallerySection } from './DocumentationGallerySection';
 import { BaliHeritageLuxuryTemplate } from './templates/BaliHeritageLuxuryTemplate';
+import { JawaLivingHeritageTemplate } from './templates/JawaLivingHeritageTemplate';
 
 interface InvitationEngineProps {
   invitation: Invitation;
@@ -48,6 +49,22 @@ export function InvitationEngine({
   if (template?.archetype === 'balinese-heritage-luxury' || invitation.templateId === 'bali-heritage') {
     return (
       <BaliHeritageLuxuryTemplate
+        invitation={invitation}
+        guestName={guestName}
+        isPreview={isPreview}
+        forceMobile={forceMobile}
+        initialOpen={initialOpen}
+        isOpenControlled={isOpenControlled}
+        onOpenStateChange={onOpenStateChange}
+        activeSectionTarget={activeSectionTarget}
+      />
+    );
+  }
+
+  // Dedicated Archetype Pipeline: Jawa Living Heritage
+  if (template?.archetype === 'jawa-living-heritage' || invitation.templateId === 'jawa-living-heritage') {
+    return (
+      <JawaLivingHeritageTemplate
         invitation={invitation}
         guestName={guestName}
         isPreview={isPreview}

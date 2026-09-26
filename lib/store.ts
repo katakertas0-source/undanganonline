@@ -294,7 +294,7 @@ export function getAllInvitations(): Invitation[] {
     if (existingIdx === -1) {
       merged.push(init);
     } else {
-      if (['inv-julian-nadia', 'inv-celine', 'inv-nocturne', 'inv-maya-adrian', 'inv-clara', 'inv-sora', 'inv-roma', 'inv-elodie', 'inv-mahadewi-bali', 'inv-bali-heritage'].includes(merged[existingIdx].id)) {
+      if (['inv-julian-nadia', 'inv-celine', 'inv-nocturne', 'inv-maya-adrian', 'inv-clara', 'inv-sora', 'inv-roma', 'inv-elodie', 'inv-mahadewi-bali', 'inv-bali-heritage', 'inv-jawa-living-heritage'].includes(merged[existingIdx].id)) {
         merged[existingIdx] = {
           ...merged[existingIdx],
           ...init,
@@ -558,34 +558,58 @@ export function createDraftInvitation(
 
   const isMahadewi = template.id === 'mahadewi-bali';
   const isBaliHeritage = template.id === 'bali-heritage';
+  const isJawaLiving = template.id === 'jawa-living-heritage';
 
   const newInvitation: Invitation = {
     id,
     userId: 'user-default-1',
-    title: isBaliHeritage ? 'Pawiwahan Putu & Sinta' : isMahadewi ? 'Pawiwahan Agung Rama & Gayatri' : 'The Wedding Celebration',
+    title: isJawaLiving ? 'Pawiwahan Danang & Sekar' : isBaliHeritage ? 'Pawiwahan Putu & Sinta' : isMahadewi ? 'Pawiwahan Agung Rama & Gayatri' : 'The Wedding Celebration',
     slug,
     serviceType,
     status: 'DRAFT',
     packageId: pkg.id,
     templateId: template.id,
     fontPreset: 'editorial-cormorant',
-    colorPreset: isBaliHeritage ? 'nocturne-black' : isMahadewi ? 'warm-linen' : template.theme.isDark ? 'nocturne-black' : 'offwhite-noir',
-    layoutPreset: isBaliHeritage ? 'framed-portrait' : isMahadewi ? 'framed-portrait' : 'split-editorial',
+    colorPreset: isJawaLiving || isBaliHeritage ? 'nocturne-black' : isMahadewi ? 'warm-linen' : template.theme.isDark ? 'nocturne-black' : 'offwhite-noir',
+    layoutPreset: isJawaLiving || isBaliHeritage || isMahadewi ? 'framed-portrait' : 'split-editorial',
     animationPreset: 'curtain-reveal',
     coverImageUrl: template.coverImageUrl,
-    coverTitle: isBaliHeritage ? 'PAWIWAHAN' : isMahadewi ? 'PAWIWAHAN AGUNG · BALINESE HERITAGE' : undefined,
-    openingQuote: isBaliHeritage
+    coverTitle: isJawaLiving || isBaliHeritage ? 'PAWIWAHAN' : isMahadewi ? 'PAWIWAHAN AGUNG · BALINESE HERITAGE' : undefined,
+    openingQuote: isJawaLiving
+      ? 'Awit saking berkah rahmat Gusti Kang Murbeng Dumadi, lumantar tulusaning tresna, kula kekalih badhe ngleksanani upacara Pawiwahan Ageng.'
+      : isBaliHeritage
       ? 'Kami dipertemukan oleh waktu, dipersatukan oleh cinta, dan akan melangkah bersama dalam ikatan suci Pawiwahan.'
       : isMahadewi
       ? 'Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud menyelenggarakan Upacara Manusa Yadnya Pawiwahan putra-putri kami.'
       : 'A celebration of love, commitment, and new beginnings.',
-    holyVerse: isBaliHeritage
+    holyVerse: isJawaLiving
+      ? 'Dua insan, satu perjalanan, dalam restu dan berkah luhur.'
+      : isBaliHeritage
       ? 'Dua Hati, Satu Perjalanan, Dalam Restu Semesta.'
       : isMahadewi
       ? 'Ihaiva stam ma vi yaustam visvam ayur vyasnutam kridantau putrair naptrbhih modamanau sve grhe. (Rg Veda X.85.42) — Wahai pasangan pengantin, semoga senantiasa bersatu dalam cinta kasih dan damai abadi.'
       : 'Two lives, two hearts, joined together in friendship, united forever in love.',
-    eventDate: isBaliHeritage ? '2026-10-24' : isMahadewi ? '2026-12-18' : '2026-11-20',
-    couple: isBaliHeritage
+    eventDate: isJawaLiving ? '2026-11-28' : isBaliHeritage ? '2026-10-24' : isMahadewi ? '2026-12-18' : '2026-11-20',
+    couple: isJawaLiving
+      ? {
+          groomName: 'Raden Mas Danang Wicaksono, S.T.',
+          groomNickname: 'Danang',
+          groomFather: 'K.R.T. Suryo Hadiningrat',
+          groomMother: 'R.Ay. Retno Kusumaningrum',
+          groomBio: 'Putra pertama dari Ndalem Suryohadiningratan, Yogyakarta.',
+          groomPhotoUrl: '/images/jawa-heritage-cover.jpg',
+          groomInstagram: '@danang.wicaksono',
+          groomLabelBadge: 'Mempelai Pria',
+          brideName: 'Raden Ajeng Sekar Kinanti, M.Ds.',
+          brideNickname: 'Sekar',
+          brideFather: 'K.P.H. Brotodiningrat',
+          brideMother: 'R.Ay. Endang Puspitasari',
+          brideBio: 'Putri bungsu dari Ndalem Brotodiningratan, Surakarta.',
+          bridePhotoUrl: '/images/jawa-heritage-secondary.jpg',
+          brideInstagram: '@sekarkinanti',
+          brideLabelBadge: 'Mempelai Wanita',
+        }
+      : isBaliHeritage
       ? {
           groomName: 'I Putu Wira Yasa, S.T.',
           groomNickname: 'Putu',
@@ -639,7 +663,58 @@ export function createDraftInvitation(
           bridePhotoUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=800&auto=format&fit=crop',
           brideLabelBadge: '',
         },
-    events: isBaliHeritage
+    events: isJawaLiving
+      ? [
+          {
+            id: 'event-1',
+            name: 'Upacara Siraman & Midodareni',
+            date: '2026-11-27',
+            startTime: '15:00',
+            endTime: '18:00',
+            timezone: 'WIB',
+            venueName: 'Pendopo Ndalem Suryohadiningratan',
+            address: 'Jl. Rotowijayan No. 18, Kadipaten, Kraton, Yogyakarta',
+            googleMapsUrl: 'https://maps.google.com/?q=Kraton+Yogyakarta',
+            orderIndex: 0,
+          },
+          {
+            id: 'event-2',
+            name: 'Akad Nikah / Ijab Qobul',
+            date: '2026-11-28',
+            startTime: '08:30',
+            endTime: '10:30',
+            timezone: 'WIB',
+            venueName: 'Joglo Ageng Heritage Pavilion',
+            address: 'Jl. Palagan Tentara Pelajar Km. 9, Sleman, D.I. Yogyakarta',
+            googleMapsUrl: 'https://maps.google.com/?q=Yogyakarta',
+            orderIndex: 1,
+          },
+          {
+            id: 'event-3',
+            name: 'Upacara Panggih Penganten',
+            date: '2026-11-28',
+            startTime: '11:00',
+            endTime: '13:00',
+            timezone: 'WIB',
+            venueName: 'Joglo Ageng Heritage Pavilion',
+            address: 'Jl. Palagan Tentara Pelajar Km. 9, Sleman, D.I. Yogyakarta',
+            googleMapsUrl: 'https://maps.google.com/?q=Yogyakarta',
+            orderIndex: 2,
+          },
+          {
+            id: 'event-4',
+            name: 'Resepsi Pawiwahan',
+            date: '2026-11-28',
+            startTime: '18:30',
+            endTime: '21:30',
+            timezone: 'WIB',
+            venueName: 'Joglo Ageng Heritage Grand Ballroom',
+            address: 'Jl. Palagan Tentara Pelajar Km. 9, Sleman, D.I. Yogyakarta',
+            googleMapsUrl: 'https://maps.google.com/?q=Yogyakarta',
+            orderIndex: 3,
+          },
+        ]
+      : isBaliHeritage
       ? [
           {
             id: 'event-1',
@@ -804,6 +879,7 @@ export function createDraftInvitation(
       },
     ],
     musicUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-piano-112199.mp3',
+    musicTitle: isJawaLiving ? 'Bunga Abadi — Rio Clappy' : isBaliHeritage ? 'Gamelan Rindik Suara Dewata' : undefined,
     videoUrl:
       template.archetype === 'dark-luxury-cinema' || template.archetype === 'romantic-cinema'
         ? 'https://www.youtube.com/watch?v=ScMzIvxBSi4'

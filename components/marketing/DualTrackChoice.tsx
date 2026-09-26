@@ -4,6 +4,8 @@ import React from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
+import { getWhatsAppBespokeUrl } from '@/lib/whatsapp';
+
 export function DualTrackChoice() {
   return (
     <section className="py-20 sm:py-28 border-b border-[#EAE6DF] bg-[#F8F6F2]">
@@ -67,29 +69,17 @@ export function DualTrackChoice() {
                   </div>
                   <div className="flex items-baseline gap-3">
                     <span className="text-[#A89F95] font-serif text-sm select-none">—</span>
-                    <span>Katalog add-on modular transparan tanpa biaya tersembunyi</span>
+                    <span>Katalog add-on modular transparan untuk kebutuhan personal</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Investment & Action Bar */}
-            <div className="p-8 sm:p-10 pt-6 border-t border-[#EFEBE4] bg-[#F7F4EE]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <span className="text-[9px] uppercase tracking-[0.2em] text-[#8C827A] block font-medium">
-                  ESTIMASI INVESTASI
-                </span>
-                <div className="flex items-baseline gap-1 mt-0.5">
-                  <span className="font-serif text-2xl sm:text-3xl text-[#1F1B18]">
-                    Rp 99.000
-                  </span>
-                  <span className="text-[11px] text-[#8C827A] font-light">/ undangan</span>
-                </div>
-              </div>
-
+            {/* Bottom Action Bar (No Price) */}
+            <div className="p-8 sm:p-10 pt-6 border-t border-[#EFEBE4] bg-[#F7F4EE]/60">
               <Link
                 href="/create"
-                className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 text-xs uppercase tracking-widest bg-[#221F1D] text-[#FAF8F5] hover:bg-[#3D3834] transition-all duration-300 shadow-xs group-hover:shadow-sm"
+                className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 text-xs uppercase tracking-widest bg-[#221F1D] text-[#FAF8F5] hover:bg-[#3D3834] transition-all duration-300 shadow-xs group-hover:shadow-sm"
               >
                 <span>MULAI BUAT MANDIRI</span>
                 <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1 text-[#D8D2C7]" />
@@ -97,7 +87,7 @@ export function DualTrackChoice() {
             </div>
           </div>
 
-          {/* Track 2: Made For You (Custom Bespoke Atelier) */}
+          {/* Track 2: Made For You (Custom Bespoke Atelier - Direct to WhatsApp) */}
           <div className="bg-[#FAF7F2] border border-[#DDD6CB] flex flex-col justify-between group transition-all duration-500 hover:border-[#C4B8A6] hover:shadow-lg overflow-hidden relative">
             {/* Delicate Atelier Corner Accent */}
             <div className="absolute top-0 right-0 w-16 h-16 pointer-events-none overflow-hidden">
@@ -153,27 +143,17 @@ export function DualTrackChoice() {
               </div>
             </div>
 
-            {/* Bottom Investment & Action Bar */}
-            <div className="p-8 sm:p-10 pt-6 border-t border-[#EAE3D7] bg-[#F3EFE7]/70 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <span className="text-[9px] uppercase tracking-[0.2em] text-[#8C827A] block font-medium">
-                  ESTIMASI INVESTASI
-                </span>
-                <div className="flex items-baseline gap-1 mt-0.5">
-                  <span className="font-serif text-2xl sm:text-3xl text-[#1F1B18]">
-                    Rp 399.000
-                  </span>
-                  <span className="text-[11px] text-[#8C827A] font-light">/ paket bespoke</span>
-                </div>
-              </div>
-
-              <Link
-                href="/services/custom"
-                className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 text-xs uppercase tracking-widest bg-[#221F1D] text-[#FAF8F5] hover:bg-[#3D3834] transition-all duration-300 shadow-xs group-hover:shadow-sm border border-[#C5A880]/30"
+            {/* Bottom Action Bar (Direct to WhatsApp) */}
+            <div className="p-8 sm:p-10 pt-6 border-t border-[#EAE3D7] bg-[#F3EFE7]/70">
+              <a
+                href={getWhatsAppBespokeUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 text-xs uppercase tracking-widest bg-[#221F1D] text-[#FAF8F5] hover:bg-[#3D3834] transition-all duration-300 shadow-xs group-hover:shadow-sm border border-[#C5A880]/30"
               >
-                <span>KONSULTASI</span>
+                <span>KONSULTASI VIA WHATSAPP</span>
                 <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1 text-[#D4AF37]" />
-              </Link>
+              </a>
             </div>
           </div>
         </div>

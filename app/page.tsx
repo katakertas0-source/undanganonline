@@ -8,6 +8,7 @@ import { DualTrackChoice } from '@/components/marketing/DualTrackChoice';
 import { TemplateGrid } from '@/components/marketing/TemplateGrid';
 import { MinimalFooter } from '@/components/marketing/MinimalFooter';
 import { ShieldCheck, Volume2, Smartphone, Globe, ArrowRight } from 'lucide-react';
+import { getWhatsAppBespokeUrl } from '@/lib/whatsapp';
 
 export default function HomePage() {
   return (
@@ -146,12 +147,14 @@ export default function HomePage() {
             >
               CREATE INVITATION
             </Link>
-            <Link
-              href="/services/custom"
+            <a
+              href={getWhatsAppBespokeUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full sm:w-auto px-8 py-4 text-xs uppercase tracking-widest border border-neutral-700 text-white hover:border-white transition-colors"
             >
-              CUSTOM SERVICE
-            </Link>
+              KONSULTASI WHATSAPP
+            </a>
           </div>
         </div>
       </section>

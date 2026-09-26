@@ -10,6 +10,14 @@ import {
   BalineseCandiBentarFrame,
 } from '@/components/ui/BalineseOrnaments';
 import { BalineseStarOrnament } from '@/components/ui/BalineseStarOrnament';
+import {
+  JavaneseMentulIcon,
+  JavaneseFloralDivider,
+  JavaneseGununganSilhouette,
+  JavaneseMorningBreezeShadows,
+  JavaneseCarvedArchTop,
+  JavaneseCarvedArchBottom,
+} from '@/components/ui/JavaneseOrnaments';
 
 interface TemplateDeviceMockupProps {
   template: Template;
@@ -418,7 +426,78 @@ export function TemplateDeviceMockup({
       );
     }
 
-    // 7. Default / Editorial Garden (AURELIA) - Botanical Symmetry
+    // 8. Jawa Living Heritage (JAWA LIVING HERITAGE) — Authentic Heritage Theater Stage
+    if (archetype === 'jawa-living-heritage') {
+      return (
+        <div className="px-1.5 pt-3 sm:pt-3.5 pb-0 flex flex-col justify-between h-[calc(100%-24px)] text-center bg-[#FAF2E6] text-[#2C1E14] relative overflow-hidden">
+          {/* Top Carved Arch */}
+          <div className="absolute top-0 inset-x-0 z-20 pointer-events-none">
+            <JavaneseCarvedArchTop className="w-full h-6" color="#7A5A30" accentColor="#C2A468" opacity={0.95} />
+          </div>
+
+          {/* Top Header & Center Titles (Upper Half) */}
+          <div className="pt-2 relative z-10 flex flex-col items-center shrink-0">
+            <JavaneseMentulIcon className="w-3 h-3 mb-0.5 text-[#8A6D3B]" />
+            <div className="text-[5px] uppercase tracking-[0.24em] text-[#8A6D3B] font-medium font-serif mb-0.5">
+              SERAT ULEM · PAWIWAHAN
+            </div>
+            <p className="text-[5px] uppercase tracking-[0.26em] text-[#8A6D3B] font-serif">
+              PAWIWAHAN
+            </p>
+            <h4 className="font-serif font-normal text-[11px] sm:text-[12px] uppercase tracking-wider text-[#2C1E14] line-clamp-1 mt-0.5">
+              {demo.groomNickname} <span className="italic font-light text-[#8A6D3B]">&amp;</span> {demo.brideNickname}
+            </h4>
+            <p className="text-[5.5px] tracking-[0.2em] text-[#8A6D3B] font-serif mb-1">
+              {demo.dateStr}
+            </p>
+            <div className="inline-flex items-center justify-center gap-1 px-3 py-0.5 rounded-full text-[5px] uppercase tracking-widest bg-[#2C1E14] text-[#FAF6F0] border border-[#C2A468] shadow-sm">
+              <span>Buka Undangan</span>
+              <span className="text-[4.5px]">→</span>
+            </div>
+          </div>
+
+          {/* Heritage Theater Stage (Lower 56% - Dense & Lush) */}
+          <div className="relative w-full h-[56%] pointer-events-none flex items-end justify-center overflow-hidden">
+            {/* Midground Panoramic Joglo Estate */}
+            <div className="absolute inset-0 w-full h-full flex justify-center items-end opacity-90">
+              <img
+                src="/images/jawa-joglo-panoramic.png"
+                alt="Joglo"
+                className="w-full h-full object-cover object-bottom"
+              />
+            </div>
+
+            {/* Altar Botanical Flowers (Snug Flanking Gunungan) */}
+            <div className="absolute bottom-0 left-[calc(50%-38px)] w-12 h-16 z-15 pointer-events-none jawa-sway-left">
+              <img src="/images/jawa-crescent-flower.png" alt="Botanical Flowers" className="w-full h-full object-contain object-bottom-left" />
+            </div>
+            <div className="absolute bottom-0 right-[calc(50%-38px)] w-12 h-16 z-15 pointer-events-none jawa-sway-right scale-x-[-1]">
+              <img src="/images/jawa-crescent-flower.png" alt="Botanical Flowers" className="w-full h-full object-contain object-bottom-left" />
+            </div>
+
+            {/* Corner Botanical Accents */}
+            <div className="absolute bottom-0 -left-1 w-9 h-12 z-10 pointer-events-none opacity-70 jawa-sway-left">
+              <img src="/images/jawa-crescent-flower.png" alt="Botanical Flowers" className="w-full h-full object-contain object-bottom-left" />
+            </div>
+            <div className="absolute bottom-0 -right-1 w-9 h-12 z-10 pointer-events-none opacity-70 jawa-sway-right scale-x-[-1]">
+              <img src="/images/jawa-crescent-flower.png" alt="Botanical Flowers" className="w-full h-full object-contain object-bottom-left" />
+            </div>
+
+            {/* Foreground Floating Golden Gunungan */}
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-14 h-22 z-18 pointer-events-none jawa-gunungan-float">
+              <img src="/images/jawa-gold-gunungan.png" alt="Gunungan" className="w-full h-full object-contain object-bottom filter drop-shadow-[0_2px_8px_rgba(184,134,11,0.4)]" />
+            </div>
+
+            {/* Bottom Carved Arch */}
+            <div className="absolute bottom-0 inset-x-0 z-20 pointer-events-none">
+              <JavaneseCarvedArchBottom className="w-full h-5" color="#7A5A30" accentColor="#C2A468" opacity={0.95} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // 9. Default / Editorial Garden (AURELIA) - Botanical Symmetry
     return (
       <div className="px-2.5 sm:px-3 pt-3 sm:pt-3.5 pb-2 sm:pb-3 flex flex-col justify-between h-[calc(100%-24px)] text-center bg-[#F8F7F3] text-[#1F1C1D]">
         <div className="pt-0.5">
@@ -620,6 +699,45 @@ export function TemplateDeviceMockup({
       );
     }
 
+    // Jawa Living Heritage: Dawn Ivory & Bamboo Shadows
+    if (archetype === 'jawa-living-heritage') {
+      return (
+        <div className="relative flex-1 overflow-hidden mt-1 bg-[#FAF6F0] text-[#211A16] flex flex-col justify-between p-2.5">
+          {/* Subtle Bamboo Foliage Shadow & Dawn Light */}
+          <div className="absolute -top-6 -right-6 w-36 h-36 bg-[radial-gradient(circle,rgba(240,195,105,0.35)_0%,transparent_70%)] pointer-events-none" />
+          <div className="absolute top-0 right-0 w-28 h-28 opacity-30 pointer-events-none">
+            <JavaneseMorningBreezeShadows />
+          </div>
+
+          <div className="text-center pt-1 z-10">
+            <p className="text-[6.5px] uppercase tracking-[0.24em] text-[#806947] font-serif font-medium">
+              TENTANG KAMI
+            </p>
+            <p className="font-serif italic text-[7.5px] text-[#806947] mt-0.5">
+              Dua Insan, Satu Perjalanan
+            </p>
+          </div>
+          <div className="relative mx-auto w-full max-w-[130px] aspect-[3/4] rounded-sm overflow-hidden border border-[#806947]/20 shadow-md">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={secondaryImage}
+              alt="Jawa Living Interior"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#211A16]/50 via-transparent to-transparent" />
+            <div className="absolute bottom-1 inset-x-0 text-center">
+              <span className="text-[6.5px] font-serif italic text-white/90">
+                Pawiwahan · 28 . 11 . 2026
+              </span>
+            </div>
+          </div>
+          <div className="text-center z-10 pb-0.5 flex flex-col items-center">
+            <JavaneseFloralDivider className="w-20 h-3 text-[#B3945A]" />
+          </div>
+        </div>
+      );
+    }
+
     // Standard Fallback for others
     return (
       <div className="relative flex-1 overflow-hidden mt-1">
@@ -751,9 +869,6 @@ export function TemplateDeviceMockup({
             <h3 className="font-serif text-2xl uppercase tracking-wider font-medium">
               {template.name}
             </h3>
-            <span className="font-serif text-base font-light text-neutral-400">
-              Rp {template.basePrice.toLocaleString('id-ID')}
-            </span>
           </div>
 
           <p className="text-[10px] uppercase tracking-ultra text-neutral-400 font-medium mb-3">

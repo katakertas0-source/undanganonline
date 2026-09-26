@@ -61,8 +61,8 @@ export function AudioFloatingToggle({
       aria-label={isPlaying ? 'Mute audio' : 'Play audio'}
       className={`${
         forceMobile
-          ? 'fixed bottom-24 right-[calc(50%-170px)] z-50 p-2.5'
-          : 'fixed bottom-6 right-6 z-50 p-3'
+          ? 'fixed bottom-20 right-3.5 z-50 p-2.5'
+          : 'fixed bottom-6 right-4 sm:right-6 z-50 p-2.5 sm:p-3'
       } rounded-full border transition-all duration-300 shadow-md flex items-center justify-center ${
         isDark
           ? 'bg-[#171717]/90 text-[#F5F3EF] border-[#F5F3EF]/20 hover:bg-[#171717]'

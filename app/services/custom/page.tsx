@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MinimalNav } from '@/components/marketing/MinimalNav';
 import { MinimalFooter } from '@/components/marketing/MinimalFooter';
 import { Check, ArrowRight, PenTool } from 'lucide-react';
+import { getWhatsAppBespokeUrl } from '@/lib/whatsapp';
 
 export default function CustomServicePage() {
   return (
@@ -99,12 +100,7 @@ export default function CustomServicePage() {
                 Pilihan tepat bagi pasangan yang ingin tim profesional mengatur seluruh komposisi dan visual tanpa perlu menyusun sendiri di editor.
               </p>
 
-              <div className="mb-6 pb-6 border-b border-neutral-100">
-                <span className="text-[10px] uppercase tracking-widest text-neutral-400 block">HARGA LAYANAN</span>
-                <span className="font-serif text-3xl font-medium text-neutral-900">Rp 399.000</span>
-              </div>
-
-              <ul className="space-y-3 text-xs text-neutral-600 font-light">
+              <ul className="space-y-3 text-xs text-neutral-600 font-light border-t border-neutral-100 pt-6">
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>Desain layout personal disesuaikan dengan foto Anda</span>
@@ -124,13 +120,15 @@ export default function CustomServicePage() {
               </ul>
             </div>
 
-            <Link
-              href="/custom/brief?package=made-for-you"
+            <a
+              href={getWhatsAppBespokeUrl('Halo Kertas.Kata, saya ingin konsultasi layanan custom Made For You.')}
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-8 w-full inline-flex items-center justify-center gap-2 py-4 text-xs uppercase tracking-widest bg-black text-white hover:bg-neutral-800 transition-colors"
             >
-              <span>Mulai Brief Made For You</span>
+              <span>Konsultasi Made For You via WhatsApp</span>
               <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            </a>
           </div>
 
           {/* Tier 2: Exclusive */}
@@ -148,12 +146,7 @@ export default function CustomServicePage() {
                 Karya seni digital seutuhnya. Urutan interaksi sinematik pembuka amplop, visual storytelling khusus, dan asistensi desainer intensif.
               </p>
 
-              <div className="mb-6 pb-6 border-b border-neutral-100">
-                <span className="text-[10px] uppercase tracking-widest text-neutral-400 block">HARGA LAYANAN</span>
-                <span className="font-serif text-3xl font-medium text-neutral-900">Rp 799.000</span>
-              </div>
-
-              <ul className="space-y-3 text-xs text-neutral-600 font-light">
+              <ul className="space-y-3 text-xs text-neutral-600 font-light border-t border-neutral-100 pt-6">
                 <li className="flex items-center gap-2.5">
                   <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>Custom motion & interactive envelope opening</span>
@@ -173,13 +166,15 @@ export default function CustomServicePage() {
               </ul>
             </div>
 
-            <Link
-              href="/custom/brief?package=exclusive"
+            <a
+              href={getWhatsAppBespokeUrl('Halo Kertas.Kata, saya ingin konsultasi layanan custom Exclusive Atelier.')}
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-8 w-full inline-flex items-center justify-center gap-2 py-4 text-xs uppercase tracking-widest bg-black text-white hover:bg-neutral-800 transition-colors"
             >
-              <span>Mulai Brief Exclusive</span>
+              <span>Konsultasi Exclusive via WhatsApp</span>
               <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            </a>
           </div>
         </div>
       </section>

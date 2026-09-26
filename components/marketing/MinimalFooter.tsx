@@ -51,11 +51,6 @@ export function MinimalFooter() {
               </Link>
             </li>
             <li>
-              <Link href="/pricing" className="hover:text-white transition-colors">
-                Add-on Pricing
-              </Link>
-            </li>
-            <li>
               <Link href="/create" className="hover:text-white transition-colors">
                 Mulai Rancang Undangan
               </Link>

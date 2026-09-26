@@ -4,8 +4,8 @@ import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MinimalNav } from '@/components/marketing/MinimalNav';
 import { MinimalFooter } from '@/components/marketing/MinimalFooter';
-import { getAllTemplates, getAllPackages, getPackageById, createDraftInvitation } from '@/lib/store';
-import { ArrowRight, Check, Lock } from 'lucide-react';
+import { getAllTemplates, createDraftInvitation } from '@/lib/store';
+import { ArrowRight, Check } from 'lucide-react';
 import { TemplateDeviceMockup } from '@/components/marketing/TemplateDeviceMockup';
 import { Template } from '@/types';
 import { TEMPLATES } from '@/lib/data/catalog';
@@ -13,10 +13,8 @@ import { TEMPLATES } from '@/lib/data/catalog';
 function CreateForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialPkgParam = searchParams.get('package');
   const initialTemplateParam = searchParams.get('template');
 
-  const packages = getAllPackages();
   const [templates, setTemplates] = useState<Template[]>(TEMPLATES);
 
   useEffect(() => {
@@ -24,39 +22,39 @@ function CreateForm() {
   }, []);
 
   const matchedTemplate = initialTemplateParam
-    ? templates.find((t) => t.id === initialTemplateParam)
+    ? templates.find((t) => t.id === initialTemplateParam || t.slug === initialTemplateParam)
     : null;
-
-  const [selectedPackageId, setSelectedPackageId] = useState<string>(() => {
-    if (matchedTemplate) {
-      return matchedTemplate.basePrice === 199000 ? 'pkg-premium' : (initialPkgParam || 'pkg-essential');
-    }
-    return initialPkgParam === 'pkg-premium' ? 'pkg-premium' : 'pkg-essential';
-  });
 
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(() => {
     if (matchedTemplate) {
       return matchedTemplate.id;
     }
-    const pkg = getPackageById(initialPkgParam === 'pkg-premium' ? 'pkg-premium' : 'pkg-essential');
-    return pkg.allowedTemplateIds[0] || 'aurelia-minimal';
+    return 'jawa-living-heritage';
   });
 
-  const selectedPkg = getPackageById(selectedPackageId);
+  useEffect(() => {
+    if (initialTemplateParam) {
+      const found = templates.find((t) => t.id === initialTemplateParam || t.slug === initialTemplateParam);
+      if (found) {
+        setSelectedTemplateId(found.id);
+      }
+    }
+  }, [initialTemplateParam, templates]);
+
   const currentTemplate = templates.find((t) => t.id === selectedTemplateId) || templates[0];
 
   const [groomName, setGroomName] = useState('');
   const [brideName, setBrideName] = useState('');
 
-  const step3Ref = useRef<HTMLDivElement>(null);
+  const stepNamesRef = useRef<HTMLDivElement>(null);
   const groomInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll directly to Step 3 (Gambar 2) if template param or hash is present
+  // Auto-scroll directly to Step 2 (Nama Mempelai) if template param or hash is present
   useEffect(() => {
     if (initialTemplateParam || (typeof window !== 'undefined' && window.location.hash === '#step-names')) {
       const timer = setTimeout(() => {
-        if (step3Ref.current) {
-          step3Ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (stepNamesRef.current) {
+          stepNamesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
           setTimeout(() => {
             groomInputRef.current?.focus({ preventScroll: true });
           }, 450);
@@ -66,23 +64,12 @@ function CreateForm() {
     }
   }, [initialTemplateParam]);
 
-  const handlePackageChange = (pkgId: string) => {
-    setSelectedPackageId(pkgId);
-    const newPkg = getPackageById(pkgId);
-    // If currently selected template is not allowed in the new package, auto-select the first allowed template
-    if (!newPkg.allowedTemplateIds.includes(selectedTemplateId)) {
-      setSelectedTemplateId(newPkg.allowedTemplateIds[0]);
-    }
-  };
-
   const handleSelectTemplate = (tmpl: Template) => {
-    const targetPkgId = tmpl.basePrice === 199000 ? 'pkg-premium' : 'pkg-essential';
-    setSelectedPackageId(targetPkgId);
     setSelectedTemplateId(tmpl.id);
 
     setTimeout(() => {
-      if (step3Ref.current) {
-        step3Ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (stepNamesRef.current) {
+        stepNamesRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
         setTimeout(() => {
           groomInputRef.current?.focus({ preventScroll: true });
         }, 350);
@@ -92,7 +79,7 @@ function CreateForm() {
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    const draft = createDraftInvitation(selectedTemplateId, selectedPackageId, 'diy');
+    const draft = createDraftInvitation(selectedTemplateId, 'pkg-premium', 'diy');
 
     // Update with names if provided
     if (groomName.trim() || brideName.trim()) {
@@ -117,134 +104,26 @@ function CreateForm() {
           Buat Undangan Sendiri
         </h1>
         <p className="text-xs sm:text-sm text-neutral-500 font-light mt-3 max-w-lg mx-auto leading-relaxed">
-          Pilih paket fondasi dan template desain Anda. Anda dapat menyesuaikan konten, foto, dan memilih add-on secara leluasa di dalam Interactive Builder.
+          Pilih template desain editorial favorit Anda, lalu masukkan nama panggilan mempelai untuk langsung mulai menyusun di dalam Interactive Builder.
         </p>
       </div>
 
       <form onSubmit={handleCreate} className="space-y-16">
-        {/* STEP 1: PILIH PAKET */}
-        <div>
-          <div className="flex items-center justify-between mb-6 pb-2 border-b border-neutral-200">
-            <div>
-              <span className="text-[10px] uppercase tracking-ultra text-neutral-400">LANGKAH 01</span>
-              <h2 className="font-serif text-2xl uppercase tracking-wide">Pilih Paket Undangan</h2>
-            </div>
-            <span className="text-xs text-neutral-400 font-light">Harga dasar ditentukan dari paket</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {packages.map((pkg) => {
-              const isSelected = selectedPackageId === pkg.id;
-              const isPremium = pkg.tier === 'premium';
-              return (
-                <div
-                  key={pkg.id}
-                  onClick={() => handlePackageChange(pkg.id)}
-                  className={`border cursor-pointer transition-all duration-300 p-6 sm:p-8 relative flex flex-col justify-between ${
-                    isSelected
-                      ? 'ring-2 ring-black border-black bg-white shadow-lg'
-                      : 'border-neutral-200 bg-white/70 hover:border-neutral-400'
-                  }`}
-                >
-                  {isSelected && (
-                    <div className="absolute top-4 right-4 z-10 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center">
-                      <Check className="w-3.5 h-3.5" />
-                    </div>
-                  )}
-
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] uppercase tracking-widest px-2 py-0.5 border border-neutral-200 text-neutral-500">
-                        {pkg.tier.toUpperCase()}
-                      </span>
-                      {isPremium && (
-                        <span className="text-[9px] uppercase tracking-widest px-2 py-0.5 bg-neutral-900 text-white">
-                          RECOMMENDED
-                        </span>
-                      )}
-                    </div>
-
-                    <h3 className="font-serif text-3xl uppercase tracking-wide mt-3">{pkg.name}</h3>
-                    <p className="font-serif text-2xl font-medium mt-1">
-                      Rp {pkg.price.toLocaleString('id-ID')}
-                    </p>
-                    <p className="text-xs text-neutral-500 font-light mt-3 leading-relaxed">
-                      {pkg.description}
-                    </p>
-
-                    <div className="mt-6 space-y-2 text-[11px] text-neutral-600 border-t border-neutral-100 pt-4">
-                      {isPremium ? (
-                        <>
-                          <p className="flex items-center gap-1.5 font-medium text-neutral-900">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <span>Akses Semua Template (Termasuk Mahadewi, Nocturne & Élodie)</span>
-                          </p>
-                          <p className="flex items-center gap-1.5">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <span>Premium Animation Preset Included</span>
-                          </p>
-                          <p className="flex items-center gap-1.5">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <span>Love Story Timeline & RSVP System Included</span>
-                          </p>
-                          <p className="flex items-center gap-1.5">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <span>Expanded 30+ Photos Gallery Included</span>
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="flex items-center gap-1.5 font-medium text-neutral-900">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <span>Template Essential (Aurelia, Céline, Clara)</span>
-                          </p>
-                          <p className="flex items-center gap-1.5">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <span>Galeri Foto Standar (10 Foto)</span>
-                          </p>
-                          <p className="flex items-center gap-1.5">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <span>Maps, Countdown & Musik Standar</span>
-                          </p>
-                          <p className="flex items-center gap-1.5 text-neutral-400">
-                            <span>+ Opsi Add-on dapat dibeli terpisah di builder</span>
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="mt-8 pt-4 border-t border-neutral-100">
-                    <span
-                      className={`text-xs uppercase tracking-widest font-medium ${
-                        isSelected ? 'text-black font-semibold' : 'text-neutral-400'
-                      }`}
-                    >
-                      {isSelected ? '✓ Paket Dipilih' : 'Pilih Paket Ini'}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* STEP 2: PILIH TEMPLATE */}
+        {/* STEP 1: PILIH TEMPLATE */}
         <div id="step-templates" className="scroll-mt-24">
           <div className="flex items-center justify-between mb-6 pb-2 border-b border-neutral-200">
             <div>
-              <span className="text-[10px] uppercase tracking-ultra text-neutral-400">LANGKAH 02</span>
-              <h2 className="font-serif text-2xl uppercase tracking-wide">Pilih Template Awal</h2>
+              <span className="text-[10px] uppercase tracking-ultra text-neutral-400">LANGKAH 01</span>
+              <h2 className="font-serif text-2xl uppercase tracking-wide">Pilih Template Desain</h2>
             </div>
             <span className="text-xs text-neutral-400 font-light">
-              Menampilkan koleksi untuk Paket {selectedPkg.name}
+              Koleksi Eksklusif Kertas.Kata
             </span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {templates.map((tmpl) => {
-              const isAllowed = selectedPkg.allowedTemplateIds.includes(tmpl.id);
-              const isSelected = selectedTemplateId === tmpl.id && isAllowed;
+              const isSelected = selectedTemplateId === tmpl.id;
 
               return (
                 <div key={tmpl.id} className="flex flex-col">
@@ -252,7 +131,7 @@ function CreateForm() {
                     template={tmpl}
                     isSelectable={true}
                     isSelected={isSelected}
-                    isAllowed={isAllowed}
+                    isAllowed={true}
                     showActions={false}
                     onSelect={() => handleSelectTemplate(tmpl)}
                   />
@@ -283,10 +162,10 @@ function CreateForm() {
           </div>
         </div>
 
-        {/* STEP 3: NAMA MEMPELAI (GAMBAR 2) */}
+        {/* STEP 2: NAMA MEMPELAI */}
         <div
           id="step-names"
-          ref={step3Ref}
+          ref={stepNamesRef}
           className="scroll-mt-24 p-8 sm:p-10 border border-neutral-200 bg-white max-w-xl mx-auto space-y-6 shadow-sm"
         >
           {/* Chosen Template Notification Bar */}
@@ -303,9 +182,6 @@ function CreateForm() {
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 bg-black text-white font-medium">
                       Template Terpilih
-                    </span>
-                    <span className="text-[9px] uppercase tracking-widest text-neutral-500 font-medium">
-                      Paket {selectedPkg.name} (Rp {selectedPkg.price.toLocaleString('id-ID')})
                     </span>
                   </div>
                   <p className="font-serif text-lg uppercase tracking-wide font-medium truncate mt-1">
@@ -329,12 +205,12 @@ function CreateForm() {
           )}
 
           <div className="text-center pb-2">
-            <span className="text-[10px] uppercase tracking-ultra text-neutral-400">LANGKAH 03</span>
+            <span className="text-[10px] uppercase tracking-ultra text-neutral-400">LANGKAH 02</span>
             <h3 className="font-serif text-2xl uppercase tracking-wide mt-1">
               Nama Panggilan Mempelai
             </h3>
             <p className="text-[11px] text-neutral-400 font-light mt-1">
-              Nama lengkap, foto, tanggal, dan detail acara dapat Anda isi dan lengkapi secara detail di dalam Interactive Builder.
+              Nama lengkap, foto, tanggal, dan detail acara dapat Anda lengkapi di dalam Interactive Builder.
             </p>
           </div>
 

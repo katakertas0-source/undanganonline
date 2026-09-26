@@ -258,3 +258,481 @@ html {
   border-color: rgba(255, 255, 255, 0.2) !important;
   color: #FFFFFF !important;
 }
+
+/* ========================================================================= */
+/* JAWA LIVING HERITAGE CINEMATIC ANIMATIONS                                */
+/* ========================================================================= */
+@keyframes jawaBreathingScale {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.03) translateY(-6px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes jawaFogDriftSlow {
+  0% {
+    transform: translateX(-6%) translateY(0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateX(6%) translateY(-8px);
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateX(-6%) translateY(0);
+    opacity: 0.35;
+  }
+}
+
+@keyframes jawaLightBreathe {
+  0% {
+    opacity: 0.45;
+    transform: scale(0.96) translate(0, 0);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05) translate(2%, -2%);
+  }
+  100% {
+    opacity: 0.45;
+    transform: scale(0.96) translate(0, 0);
+  }
+}
+
+@keyframes jawaBatikWind {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-14px, -18px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes jawaGununganAura {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 4px 20px rgba(229, 169, 60, 0.25));
+  }
+  50% {
+    transform: scale(1.035);
+    filter: drop-shadow(0 12px 36px rgba(229, 169, 60, 0.55));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 4px 20px rgba(229, 169, 60, 0.25));
+  }
+}
+
+@keyframes jawaFoliageSway {
+  0% {
+    transform: rotate(0deg) translate(0, 0);
+  }
+  50% {
+    transform: rotate(2.5deg) translate(8px, -4px);
+  }
+  100% {
+    transform: rotate(0deg) translate(0, 0);
+  }
+}
+
+@keyframes jawaMoteFloat {
+  0% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.2;
+  }
+  50% {
+    transform: translateY(-24px) translateX(8px);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.2;
+  }
+}
+
+@keyframes jawaSunsetSun {
+  0% {
+    transform: translateY(0px) scale(1);
+    filter: drop-shadow(0 0 25px rgba(229, 137, 54, 0.35));
+  }
+  50% {
+    transform: translateY(14px) scale(1.04);
+    filter: drop-shadow(0 0 50px rgba(229, 137, 54, 0.7));
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+    filter: drop-shadow(0 0 25px rgba(229, 137, 54, 0.35));
+  }
+}
+
+.jawa-anim-breathe {
+  animation: jawaBreathingScale 10s ease-in-out infinite !important;
+  will-change: transform;
+}
+
+.jawa-anim-fog {
+  animation: jawaFogDriftSlow 11s ease-in-out infinite !important;
+  will-change: transform, opacity;
+}
+
+.jawa-anim-light {
+  animation: jawaLightBreathe 5.5s ease-in-out infinite !important;
+  will-change: transform, opacity;
+}
+
+.jawa-anim-batik {
+  animation: jawaBatikWind 12s ease-in-out infinite !important;
+  will-change: transform;
+}
+
+.jawa-anim-gunungan {
+  animation: jawaGununganAura 6s ease-in-out infinite !important;
+  will-change: transform, filter;
+}
+
+.jawa-anim-foliage {
+  animation: jawaFoliageSway 4.8s ease-in-out infinite !important;
+  transform-origin: top right !important;
+  will-change: transform;
+}
+
+.jawa-anim-mote {
+  animation: jawaMoteFloat 9s ease-in-out infinite !important;
+  will-change: transform, opacity;
+}
+
+.jawa-anim-sunset {
+  animation: jawaSunsetSun 10s ease-in-out infinite !important;
+  will-change: transform, filter;
+}
+
+/* =========================================================================
+   JAWA LIVING HERITAGE — JASMINE PETALS & GEBYOK AURA MOTIONS
+   ========================================================================= */
+
+@keyframes jawaPetalFall1 {
+  0% {
+    transform: translateY(-20px) translateX(0px) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(680px) translateX(45px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes jawaPetalFall2 {
+  0% {
+    transform: translateY(-20px) translateX(0px) rotate(45deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.75;
+  }
+  80% {
+    opacity: 0.75;
+  }
+  100% {
+    transform: translateY(680px) translateX(-50px) rotate(-320deg);
+    opacity: 0;
+  }
+}
+
+@keyframes jawaPetalFall3 {
+  0% {
+    transform: translateY(-20px) translateX(0px) rotate(-30deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(720px) translateX(35px) rotate(280deg);
+    opacity: 0;
+  }
+}
+
+@keyframes jawaRonceanSway {
+  0% {
+    transform: rotate(0deg) translateY(0);
+  }
+  50% {
+    transform: rotate(4.5deg) translateY(3px);
+  }
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+}
+
+@keyframes jawaGebyokGlow {
+  0% {
+    box-shadow: 0 0 15px rgba(194, 164, 104, 0.25), inset 0 0 15px rgba(194, 164, 104, 0.1);
+    border-color: rgba(194, 164, 104, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(212, 168, 83, 0.6), inset 0 0 25px rgba(212, 168, 83, 0.25);
+    border-color: rgba(229, 192, 123, 0.95);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(194, 164, 104, 0.25), inset 0 0 15px rgba(194, 164, 104, 0.1);
+    border-color: rgba(194, 164, 104, 0.6);
+  }
+}
+
+.jawa-petal-1 {
+  animation: jawaPetalFall1 8s ease-in-out infinite !important;
+}
+
+.jawa-petal-2 {
+  animation: jawaPetalFall2 10.5s ease-in-out infinite !important;
+  animation-delay: 2.5s !important;
+}
+
+.jawa-petal-3 {
+  animation: jawaPetalFall3 9.2s ease-in-out infinite !important;
+  animation-delay: 5s !important;
+}
+
+.jawa-roncean-sway {
+  animation: jawaRonceanSway 3.8s ease-in-out infinite !important;
+  transform-origin: top center !important;
+  will-change: transform;
+}
+
+.jawa-gebyok-glow {
+  animation: jawaGebyokGlow 4.5s ease-in-out infinite !important;
+  will-change: box-shadow, border-color;
+}
+
+/* =========================================================================
+   JAWA LIVING HERITAGE — STAGE MOTIONS (FLOWER SWAY, GUNUNGAN, CLOUDS)
+   ========================================================================= */
+
+@keyframes jawaFlowerSwayLeft {
+  0% {
+    transform: rotate(0deg) scale(1) translateY(0);
+  }
+  30% {
+    transform: rotate(3.5deg) scale(1.02) translateY(-4px);
+  }
+  65% {
+    transform: rotate(-2.5deg) scale(1.01) translateY(2px);
+  }
+  100% {
+    transform: rotate(0deg) scale(1) translateY(0);
+  }
+}
+
+@keyframes jawaFlowerSwayRight {
+  0% {
+    transform: rotate(0deg) scale(1) translateY(0);
+  }
+  35% {
+    transform: rotate(-4deg) scale(1.02) translateY(-5px);
+  }
+  70% {
+    transform: rotate(2deg) scale(1.01) translateY(1px);
+  }
+  100% {
+    transform: rotate(0deg) scale(1) translateY(0);
+  }
+}
+
+@keyframes jawaGununganFloat {
+  0% {
+    transform: translateY(0px) scale(1);
+    filter: drop-shadow(0 10px 20px rgba(184, 134, 11, 0.25));
+  }
+  50% {
+    transform: translateY(-12px) scale(1.025);
+    filter: drop-shadow(0 18px 30px rgba(212, 160, 23, 0.45));
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+    filter: drop-shadow(0 10px 20px rgba(184, 134, 11, 0.25));
+  }
+}
+
+@keyframes jawaCloudDrift {
+  0% {
+    transform: translateX(-24px);
+  }
+  50% {
+    transform: translateX(24px);
+  }
+  100% {
+    transform: translateX(-24px);
+  }
+}
+
+@keyframes jawaJogloBreathe {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.022);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes jawaScrollDot {
+  0% {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(9px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+}
+
+.jawa-sway-left {
+  animation: jawaFlowerSwayLeft 5.5s ease-in-out infinite !important;
+  transform-origin: bottom left !important;
+  will-change: transform;
+}
+
+.jawa-sway-right {
+  animation: jawaFlowerSwayRight 6.2s ease-in-out infinite !important;
+  transform-origin: bottom right !important;
+  will-change: transform;
+}
+
+.jawa-gunungan-float {
+  animation: jawaGununganFloat 4.8s ease-in-out infinite !important;
+  will-change: transform, filter;
+}
+
+.jawa-cloud-drift {
+  animation: jawaCloudDrift 28s ease-in-out infinite !important;
+  will-change: transform;
+}
+
+.jawa-joglo-breathe {
+  animation: jawaJogloBreathe 14s ease-in-out infinite !important;
+  transform-origin: center center !important;
+  will-change: transform;
+}
+
+.jawa-scroll-dot {
+  animation: jawaScrollDot 2s cubic-bezier(0.65, 0, 0.35, 1) infinite !important;
+  will-change: transform, opacity;
+}
+
+/* =========================================================================
+   JAWA LIVING HERITAGE — DOWNSTREAM LIVING MOTIONS (ALL SECTIONS)
+   ========================================================================= */
+
+@keyframes jawaRadiancePulse {
+  0% {
+    filter: drop-shadow(0 4px 12px rgba(184, 134, 11, 0.25));
+  }
+  50% {
+    filter: drop-shadow(0 6px 22px rgba(212, 168, 83, 0.65));
+  }
+  100% {
+    filter: drop-shadow(0 4px 12px rgba(184, 134, 11, 0.25));
+  }
+}
+
+@keyframes jawaDiamondPulse {
+  0% {
+    transform: rotate(45deg) scale(1);
+    box-shadow: 0 0 0 0 rgba(194, 164, 104, 0.7);
+  }
+  70% {
+    transform: rotate(45deg) scale(1.15);
+    box-shadow: 0 0 0 8px rgba(194, 164, 104, 0);
+  }
+  100% {
+    transform: rotate(45deg) scale(1);
+    box-shadow: 0 0 0 0 rgba(194, 164, 104, 0);
+  }
+}
+
+@keyframes jawaMelatiSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes jawaWaxSealPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(44, 30, 20, 0.35);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 8px 22px rgba(194, 164, 104, 0.55);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(44, 30, 20, 0.35);
+  }
+}
+
+@keyframes jawaScrollWave {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.jawa-radiance-pulse {
+  animation: jawaRadiancePulse 4.5s ease-in-out infinite !important;
+  will-change: filter;
+}
+
+.jawa-diamond-pulse {
+  animation: jawaDiamondPulse 2.8s cubic-bezier(0.45, 0, 0.55, 1) infinite !important;
+  will-change: transform, box-shadow;
+}
+
+.jawa-melati-spin {
+  animation: jawaMelatiSpin 28s linear infinite !important;
+  will-change: transform;
+}
+
+.jawa-wax-seal {
+  animation: jawaWaxSealPulse 3.5s ease-in-out infinite !important;
+  will-change: transform, box-shadow;
+}
+
+.jawa-scroll-wave {
+  animation: jawaScrollWave 6s ease-in-out infinite !important;
+  will-change: transform;
+}
+
+
+

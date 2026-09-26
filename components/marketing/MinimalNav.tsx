@@ -87,9 +87,6 @@ export function MinimalNav() {
             <Link href="/services" className="hover:text-black transition-colors">
               Services
             </Link>
-            <Link href="/pricing" className="hover:text-black transition-colors">
-              Pricing
-            </Link>
             {(user || clientSession) && (
               <Link
                 href={clientSession ? `/dashboard?id=${clientSession.invitationId}` : '/dashboard'}
@@ -166,13 +163,6 @@ export function MinimalNav() {
               className="block text-xs uppercase tracking-widest py-2 text-neutral-700"
             >
               Services (DIY vs Custom)
-            </Link>
-            <Link
-              href="/pricing"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-xs uppercase tracking-widest py-2 text-neutral-700"
-            >
-              Pricing & Packages
             </Link>
             {user && (
               <Link
