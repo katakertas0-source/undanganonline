@@ -570,7 +570,7 @@ export function createDraftInvitation(
     packageId: pkg.id,
     templateId: template.id,
     fontPreset: 'editorial-cormorant',
-    colorPreset: isJawaLiving || isBaliHeritage ? 'nocturne-black' : isMahadewi ? 'warm-linen' : template.theme.isDark ? 'nocturne-black' : 'offwhite-noir',
+    colorPreset: isJawaLiving ? 'warm-linen' : isBaliHeritage ? 'nocturne-black' : isMahadewi ? 'warm-linen' : template.theme.isDark ? 'nocturne-black' : 'offwhite-noir',
     layoutPreset: isJawaLiving || isBaliHeritage || isMahadewi ? 'framed-portrait' : 'split-editorial',
     animationPreset: 'curtain-reveal',
     coverImageUrl: template.coverImageUrl,
