@@ -20,8 +20,14 @@ import {
   restoreTemplate,
   updateTemplatePrice,
   resetTemplatePrice,
+  getAllPackagesWithStatus,
+  updatePackagePrice,
+  resetPackagePrice,
+  getAllAddonsWithStatus,
+  updateAddonPrice,
+  resetAddonPrice,
 } from '@/lib/store';
-import { Invitation, Order, Template } from '@/types';
+import { Invitation, Order, Template, DiyPackage, Addon } from '@/types';
 import {
   ShieldAlert,
   Search,
@@ -62,12 +68,25 @@ export default function AdminPortalPage() {
   const [loading, setLoading] = useState(true);
 
   // Filter & Search states
-  const [activeTab, setActiveTab] = useState<'invitations' | 'orders' | 'custom_briefs' | 'templates'>('invitations');
+  const [activeTab, setActiveTab] = useState<'invitations' | 'orders' | 'pricing' | 'custom_briefs' | 'templates'>('invitations');
   const [searchInvQuery, setSearchInvQuery] = useState('');
   const [filterInvStatus, setFilterInvStatus] = useState<string>('ALL');
   const [searchOrderQuery, setSearchOrderQuery] = useState('');
   const [filterOrderStatus, setFilterOrderStatus] = useState<string>('ALL');
   const [statusChangeMessage, setStatusChangeMessage] = useState<string | null>(null);
+
+  // Package & Addon Pricing States
+  const [packagesList, setPackagesList] = useState<Array<DiyPackage & { isCustomPrice?: boolean; defaultBasePrice: number }>>([]);
+  const [addonsList, setAddonsList] = useState<Array<Addon & { isCustomPrice?: boolean; defaultBasePrice: number }>>([]);
+  const [pricingToEdit, setPricingToEdit] = useState<{
+    type: 'package' | 'addon';
+    id: string;
+    name: string;
+    currentPrice: number;
+    defaultPrice: number;
+  } | null>(null);
+  const [pricingInput, setPricingInput] = useState<number>(0);
+  const [pricingSuccessMsg, setPricingSuccessMsg] = useState<string | null>(null);
 
   // Template Catalog Management States
   const [templatesList, setTemplatesList] = useState<Array<Template & { isDeleted: boolean; isCustomPrice?: boolean; defaultBasePrice?: number }>>([]);
@@ -106,11 +125,15 @@ export default function AdminPortalPage() {
       const orderList = await getAllOrdersAsync();
       setOrders(orderList);
       setTemplatesList(getAllTemplatesWithStatus());
+      setPackagesList(getAllPackagesWithStatus());
+      setAddonsList(getAllAddonsWithStatus());
     } catch (err) {
       console.warn('Error loading admin remote data, using local:', err);
       setInvitations(getAllInvitations());
       setOrders(getAllOrders());
       setTemplatesList(getAllTemplatesWithStatus());
+      setPackagesList(getAllPackagesWithStatus());
+      setAddonsList(getAllAddonsWithStatus());
     } finally {
       setLoading(false);
     }
@@ -387,6 +410,69 @@ export default function AdminPortalPage() {
 
   const formatRupiah = (num: number) => {
     return 'Rp ' + num.toLocaleString('id-ID');
+  };
+
+  const handleOpenPricingModal = (
+    type: 'package' | 'addon',
+    id: string,
+    name: string,
+    currentPrice: number,
+    defaultPrice: number
+  ) => {
+    setPricingToEdit({
+      type,
+      id,
+      name,
+      currentPrice,
+      defaultPrice,
+    });
+    setPricingInput(currentPrice);
+    setPricingSuccessMsg(null);
+  };
+
+  const handleSavePricing = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pricingToEdit) return;
+    const finalPrice = Math.max(0, Math.round(Number(pricingInput) || 0));
+    if (pricingToEdit.type === 'package') {
+      await updatePackagePrice(pricingToEdit.id, finalPrice);
+      setPackagesList(getAllPackagesWithStatus());
+      setPricingSuccessMsg(`Harga paket "${pricingToEdit.name}" berhasil diubah menjadi ${formatRupiah(finalPrice)}!`);
+    } else {
+      await updateAddonPrice(pricingToEdit.id, finalPrice);
+      setAddonsList(getAllAddonsWithStatus());
+      setPricingSuccessMsg(`Harga add-on "${pricingToEdit.name}" berhasil diubah menjadi ${formatRupiah(finalPrice)}!`);
+    }
+    setTimeout(() => {
+      setPricingToEdit(null);
+      setPricingSuccessMsg(null);
+    }, 1200);
+  };
+
+  const handleResetPricing = async (
+    type: 'package' | 'addon',
+    id: string,
+    name: string,
+    defaultPrice: number
+  ) => {
+    if (type === 'package') {
+      await resetPackagePrice(id);
+      setPackagesList(getAllPackagesWithStatus());
+      setStatusChangeMessage(`Harga paket "${name}" berhasil dikembalikan ke bawaan (${formatRupiah(defaultPrice)}).`);
+    } else {
+      await resetAddonPrice(id);
+      setAddonsList(getAllAddonsWithStatus());
+      setStatusChangeMessage(`Harga add-on "${name}" berhasil dikembalikan ke bawaan (${formatRupiah(defaultPrice)}).`);
+    }
+    setTimeout(() => setStatusChangeMessage(null), 3000);
+    if (pricingToEdit && pricingToEdit.id === id) {
+      setPricingInput(defaultPrice);
+      setPricingSuccessMsg(`Harga "${name}" direset ke bawaan (${formatRupiah(defaultPrice)})!`);
+      setTimeout(() => {
+        setPricingToEdit(null);
+        setPricingSuccessMsg(null);
+      }, 1200);
+    }
   };
 
   if (checkingAuth) {
@@ -737,6 +823,24 @@ export default function AdminPortalPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab('pricing')}
+            className={`px-6 py-3 border-b-2 font-medium transition-all flex items-center gap-2 ${
+              activeTab === 'pricing'
+                ? 'border-black text-black'
+                : 'border-transparent text-neutral-400 hover:text-black'
+            }`}
+          >
+            <Tag className="w-3.5 h-3.5" />
+            <span>Kelola Harga (Paket & Add-on)</span>
+            {(packagesList.filter((p) => p.isCustomPrice).length > 0 ||
+              addonsList.filter((a) => a.isCustomPrice).length > 0) && (
+              <span className="px-1.5 py-0.5 text-[9px] bg-emerald-600 text-white rounded-full font-mono font-semibold">
+                Kustom
+              </span>
+            )}
+          </button>
+
+          <button
             onClick={() => setActiveTab('custom_briefs')}
             className={`px-6 py-3 border-b-2 font-medium transition-all flex items-center gap-2 ${
               activeTab === 'custom_briefs'
@@ -998,8 +1102,9 @@ export default function AdminPortalPage() {
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-neutral-200 bg-neutral-50/70 text-[10px] uppercase tracking-widest text-neutral-500">
-                    <th className="py-3 px-4">No. Order</th>
-                    <th className="py-3 px-4">Item & Layanan</th>
+                    <th className="py-3 px-4">Order ID & Lynk Ref</th>
+                    <th className="py-3 px-4">Undangan & Paket</th>
+                    <th className="py-3 px-4">Add-ons Terpilih</th>
                     <th className="py-3 px-4">Total Biaya</th>
                     <th className="py-3 px-4">Metode Bayar</th>
                     <th className="py-3 px-4">Waktu Dibuat / Lunas</th>
@@ -1010,54 +1115,83 @@ export default function AdminPortalPage() {
                 <tbody className="divide-y divide-neutral-100">
                   {filteredOrders.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-12 text-center text-neutral-400">
+                      <td colSpan={8} className="py-12 text-center text-neutral-400">
                         Belum ada data pesanan yang sesuai filter.
                       </td>
                     </tr>
                   ) : (
-                    filteredOrders.map((order) => (
-                      <tr key={order.id} className="hover:bg-neutral-50/50 transition-colors">
-                        <td className="py-3.5 px-4 font-mono font-semibold text-neutral-900">
-                          {order.orderNumber}
-                        </td>
+                    filteredOrders.map((order) => {
+                      const packageItem = order.items.find((i) => i.itemType === 'PACKAGE');
+                      const addonItems = order.items.filter((i) => i.itemType === 'ADDON');
 
-                        <td className="py-3.5 px-4">
-                          <p className="font-medium text-neutral-800">
-                            {order.items.map((i) => i.itemName).join(', ') || 'Paket Undangan'}
-                          </p>
-                          <span className="text-[10px] text-neutral-400 font-mono">
-                            Ref Inv: {order.invitationId}
-                          </span>
-                        </td>
-
-                        <td className="py-3.5 px-4 font-mono font-semibold text-neutral-900">
-                          {formatRupiah(order.netAmount || order.totalAmount)}
-                        </td>
-
-                        <td className="py-3.5 px-4 text-neutral-600 font-light">
-                          {order.paymentMethod || 'Belum dipilih'}
-                        </td>
-
-                        <td className="py-3.5 px-4 text-neutral-500 font-mono text-[11px]">
-                          <div>{new Date(order.createdAt).toLocaleDateString('id-ID')}</div>
-                          {order.paidAt && (
-                            <div className="text-emerald-600 text-[10px]">
-                              Lunas: {new Date(order.paidAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                      return (
+                        <tr key={order.id} className="hover:bg-neutral-50/50 transition-colors">
+                          <td className="py-3.5 px-4 font-mono font-semibold text-neutral-900">
+                            <div>{order.orderNumber}</div>
+                            {order.lynkRefId && (
+                              <div className="text-[10px] text-neutral-400 font-normal">
+                                Lynk: {order.lynkRefId}
+                              </div>
+                            )}
+                            <div className="text-[9px] text-neutral-300 font-mono truncate max-w-[120px]">
+                              {order.id}
                             </div>
-                          )}
-                        </td>
+                          </td>
 
-                        <td className="py-3.5 px-4">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-semibold border ${
-                              order.paymentStatus === 'PAID'
-                                ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
-                                : 'border-amber-300 bg-amber-50 text-amber-800'
-                            }`}
-                          >
-                            ● {order.paymentStatus}
-                          </span>
-                        </td>
+                          <td className="py-3.5 px-4">
+                            <p className="font-medium text-neutral-800">
+                              {packageItem?.itemName || 'Paket Undangan'}
+                            </p>
+                            <span className="text-[10px] text-neutral-400 font-mono">
+                              Ref Inv: {order.invitationId}
+                            </span>
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            {addonItems.length > 0 ? (
+                              <div className="flex flex-wrap gap-1 max-w-xs">
+                                {addonItems.map((addon) => (
+                                  <span
+                                    key={addon.id}
+                                    className="px-1.5 py-0.5 bg-neutral-100 text-[10px] text-neutral-700 rounded border border-neutral-200"
+                                  >
+                                    {addon.itemName}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-neutral-400 italic">Tanpa Add-on</span>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4 font-mono font-semibold text-neutral-900">
+                            {formatRupiah(order.netAmount || order.total || order.totalAmount)}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-neutral-600 font-light">
+                            {order.paymentMethod || 'Lynk.id / Belum dipilih'}
+                          </td>
+
+                          <td className="py-3.5 px-4 text-neutral-500 font-mono text-[11px]">
+                            <div>{new Date(order.createdAt).toLocaleDateString('id-ID')}</div>
+                            {order.paidAt && (
+                              <div className="text-emerald-600 text-[10px]">
+                                Lunas: {new Date(order.paidAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            )}
+                          </td>
+
+                          <td className="py-3.5 px-4">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] uppercase tracking-wider font-semibold border ${
+                                order.paymentStatus === 'PAID'
+                                  ? 'border-emerald-300 bg-emerald-50 text-emerald-800'
+                                  : 'border-amber-300 bg-amber-50 text-amber-800'
+                              }`}
+                            >
+                              ● {order.paymentStatus}
+                            </span>
+                          </td>
 
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -1084,10 +1218,224 @@ export default function AdminPortalPage() {
                           </div>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
+                    );
+                  })
+                )}
+              </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Manajemen Harga (Paket & Add-on) */}
+        {activeTab === 'pricing' && (
+          <div className="space-y-8">
+            {/* Header Banner */}
+            <div className="p-6 bg-white border border-neutral-200 space-y-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="font-serif text-xl uppercase tracking-wide flex items-center gap-2">
+                    <Tag className="w-5 h-5 text-[#E5C378]" />
+                    <span>Pengaturan Harga Paket & Add-on</span>
+                  </h3>
+                  <p className="text-xs text-neutral-500 font-light leading-relaxed mt-1">
+                    Atur harga paket utama dan add-on fitur berbayar secara fleksibel. Setiap perubahan harga langsung tersinkronisasi ke form pemesanan pelanggan (<code className="font-mono text-[11px] bg-neutral-100 px-1 py-0.5">/create</code>), builder undangan, dan gateway pembayaran Lynk.id.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[11px] px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-sm flex items-center gap-1.5 font-medium">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    Tersinkron Database & Cache
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bagian 1: Paket Undangan */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-serif text-base uppercase tracking-wider text-black">
+                    1. Paket Utama Undangan
+                  </h4>
+                  <p className="text-xs text-neutral-500 font-light">
+                    Tier paket dasar yang dipilih oleh calon pengantin saat pertama kali membuat undangan.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {packagesList.map((pkg) => (
+                  <div
+                    key={pkg.id}
+                    className="p-5 bg-white border border-neutral-200 rounded-sm space-y-4 shadow-xs relative overflow-hidden"
+                  >
+                    {pkg.isCustomPrice && (
+                      <div className="absolute top-0 right-0 bg-emerald-600 text-white text-[9px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-bl">
+                        Harga Kustom
+                      </div>
+                    )}
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 bg-neutral-100 text-neutral-600 rounded">
+                            Tier {pkg.tier}
+                          </span>
+                          <h5 className="font-serif text-lg font-medium">{pkg.name}</h5>
+                        </div>
+                        <p className="text-xs text-neutral-500 font-light mt-1">
+                          {pkg.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Features list */}
+                    <div className="bg-neutral-50 p-3 rounded text-xs space-y-1.5 text-neutral-600 border border-neutral-100">
+                      <div className="flex items-center justify-between">
+                        <span>Tagline:</span>
+                        <span className="font-medium text-black">{pkg.tagline}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Akses Template:</span>
+                        <span className="font-medium text-black">{pkg.allowedTemplateIds.length} Desain Eksklusif</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Fitur Termasuk:</span>
+                        <span className="font-medium text-black">{pkg.includedFeatureCodes.length} Fitur Unggulan</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Add-on Tersedia:</span>
+                        <span className="font-medium text-black">{pkg.availableAddonIds.length} Add-on Pilihan</span>
+                      </div>
+                    </div>
+
+                    {/* Pricing Display */}
+                    <div className="pt-2 border-t border-neutral-100 flex items-center justify-between">
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-neutral-400">Harga Aktif Saat Ini</div>
+                        <div className="text-xl font-serif font-medium text-black">
+                          {formatRupiah(pkg.price)}
+                        </div>
+                        {pkg.isCustomPrice && (
+                          <div className="text-[11px] text-neutral-400 line-through">
+                            Bawaan: {formatRupiah(pkg.defaultBasePrice)}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {pkg.isCustomPrice && (
+                          <button
+                            type="button"
+                            onClick={() => handleResetPricing('package', pkg.id, pkg.name, pkg.defaultBasePrice)}
+                            className="px-3 py-1.5 text-xs text-neutral-500 hover:text-red-600 border border-neutral-200 hover:border-red-300 transition-colors cursor-pointer rounded-xs"
+                            title="Kembalikan ke harga bawaan"
+                          >
+                            Reset
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenPricingModal('package', pkg.id, pkg.name, pkg.price, pkg.defaultBasePrice)}
+                          className="px-4 py-1.5 text-xs uppercase tracking-wider bg-black hover:bg-neutral-800 text-white font-medium transition-colors cursor-pointer rounded-xs flex items-center gap-1.5"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                          <span>Ubah Harga</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bagian 2: Fitur Add-ons Berbayar */}
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-serif text-base uppercase tracking-wider text-black">
+                  2. Fitur Tambahan (Add-ons)
+                </h4>
+                <p className="text-xs text-neutral-500 font-light">
+                  Fitur modular yang dapat dibeli oleh pengguna untuk melengkapi undangan pernikahan mereka.
+                </p>
+              </div>
+
+              <div className="bg-white border border-neutral-200 overflow-x-auto shadow-xs">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-neutral-200 bg-neutral-50 font-serif uppercase tracking-wider text-[11px] text-neutral-500">
+                      <th className="py-3 px-4">Nama Fitur Add-on</th>
+                      <th className="py-3 px-4">Kategori</th>
+                      <th className="py-3 px-4">Kode ID</th>
+                      <th className="py-3 px-4">Harga Bawaan</th>
+                      <th className="py-3 px-4">Harga Aktif</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100 font-light">
+                    {addonsList.map((addon) => (
+                      <tr key={addon.id} className="hover:bg-neutral-50/70 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="font-medium text-black">{addon.name}</div>
+                          <div className="text-[11px] text-neutral-400 line-clamp-1">{addon.description}</div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider bg-neutral-100 text-neutral-600 rounded">
+                            {addon.category}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-mono text-[11px] text-neutral-500">
+                          {addon.id}
+                        </td>
+                        <td className="py-3 px-4 text-neutral-400 font-mono">
+                          {addon.defaultBasePrice === 0 ? 'Gratis' : formatRupiah(addon.defaultBasePrice)}
+                        </td>
+                        <td className="py-3 px-4 font-mono font-medium text-black">
+                          {addon.defaultPrice === 0 ? (
+                            <span className="text-emerald-600 font-semibold">Gratis</span>
+                          ) : (
+                            formatRupiah(addon.defaultPrice)
+                          )}
+                        </td>
+                        <td className="py-3 px-4">
+                          {addon.isCustomPrice ? (
+                            <span className="px-2 py-0.5 text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium rounded-full">
+                              Kustom
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 text-[10px] bg-neutral-100 text-neutral-500 rounded-full">
+                              Bawaan
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {addon.isCustomPrice && (
+                              <button
+                                type="button"
+                                onClick={() => handleResetPricing('addon', addon.id, addon.name, addon.defaultBasePrice)}
+                                className="px-2.5 py-1 text-xs text-neutral-500 hover:text-red-600 transition-colors cursor-pointer"
+                                title="Kembalikan ke harga bawaan"
+                              >
+                                Reset
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenPricingModal('addon', addon.id, addon.name, addon.defaultPrice, addon.defaultBasePrice)}
+                              className="px-3 py-1 text-xs bg-neutral-100 hover:bg-black hover:text-white text-black font-medium transition-colors cursor-pointer rounded-xs flex items-center gap-1"
+                            >
+                              <Edit className="w-3 h-3" />
+                              <span>Ubah</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
@@ -1680,6 +2028,132 @@ export default function AdminPortalPage() {
                   <button
                     type="button"
                     onClick={() => setTemplateToEditPrice(null)}
+                    className="px-4 py-2 text-xs uppercase tracking-wider text-neutral-400 hover:text-white border border-neutral-700 transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 text-xs uppercase tracking-wider bg-[#E5C378] hover:bg-[#d8b566] text-black font-semibold transition-colors cursor-pointer shadow-md"
+                  >
+                    Simpan Harga
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Package & Addon Price Modal */}
+      {pricingToEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#181818] border border-neutral-800 p-6 sm:p-8 max-w-md w-full text-white shadow-2xl relative">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-neutral-800 mb-6">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[#E5C378]">
+                <Tag className="w-4 h-4 text-[#E5C378]" />
+                <span>
+                  {pricingToEdit.type === 'package' ? 'Ubah Harga Paket' : 'Ubah Harga Add-on'}
+                </span>
+              </div>
+              <button
+                onClick={() => setPricingToEdit(null)}
+                className="text-neutral-400 hover:text-white transition-colors p-1 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Item Summary Box */}
+            <div className="mb-5 p-4 bg-[#222222] border border-neutral-700/80 rounded-xs">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-mono">
+                  {pricingToEdit.type === 'package' ? 'PAKET UTAMA' : 'FITUR ADD-ON'}
+                </span>
+                <span className="font-mono text-[10px] text-[#E5C378]">ID: {pricingToEdit.id}</span>
+              </div>
+              <p className="font-serif text-base font-medium text-white mb-2">
+                {pricingToEdit.name}
+              </p>
+              <div className="flex items-center justify-between text-xs text-neutral-400 border-t border-neutral-800 pt-2">
+                <span>Harga Bawaan Sistem:</span>
+                <span className="font-mono text-neutral-300">
+                  {pricingToEdit.defaultPrice === 0 ? 'Gratis (Rp 0)' : formatRupiah(pricingToEdit.defaultPrice)}
+                </span>
+              </div>
+            </div>
+
+            {pricingSuccessMsg && (
+              <div className="mb-4 p-3 bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 text-xs flex items-center gap-2 rounded-xs animate-fade-in">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{pricingSuccessMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSavePricing} className="space-y-5">
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-neutral-300 mb-1.5 font-medium">
+                  Harga Baru (Rupiah):
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-xs text-neutral-400 font-mono">Rp</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1000"
+                    value={pricingInput}
+                    onChange={(e) => setPricingInput(Number(e.target.value))}
+                    required
+                    className="w-full bg-[#121212] border border-neutral-700 pl-10 pr-3 py-2 text-sm text-white font-mono outline-none focus:border-[#E5C378] transition-colors"
+                    placeholder="Contoh: 49000"
+                  />
+                </div>
+                <p className="text-[11px] text-neutral-400 mt-1 font-mono">
+                  Format tampil: {pricingInput === 0 ? 'Gratis (Rp 0)' : formatRupiah(pricingInput)}
+                </p>
+              </div>
+
+              {/* Quick shortcut buttons */}
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-neutral-400 mb-2">
+                  Pilihan Cepat:
+                </label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {(pricingToEdit.type === 'package'
+                    ? [49000, 79000, 99000, 149000]
+                    : [0, 15000, 25000, 50000]
+                  ).map((quickPrice) => (
+                    <button
+                      key={quickPrice}
+                      type="button"
+                      onClick={() => setPricingInput(quickPrice)}
+                      className={`px-2 py-1.5 text-[11px] font-mono border transition-colors cursor-pointer rounded-xs ${
+                        pricingInput === quickPrice
+                          ? 'border-[#E5C378] text-[#E5C378] bg-[#E5C378]/10'
+                          : 'border-neutral-700 text-neutral-300 hover:border-neutral-500'
+                      }`}
+                    >
+                      {quickPrice === 0 ? 'Gratis' : formatRupiah(quickPrice)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between pt-4 border-t border-neutral-800">
+                <button
+                  type="button"
+                  onClick={() => handleResetPricing(pricingToEdit.type, pricingToEdit.id, pricingToEdit.name, pricingToEdit.defaultPrice)}
+                  className="text-xs text-neutral-400 hover:text-white underline cursor-pointer"
+                >
+                  Gunakan Harga Bawaan
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPricingToEdit(null)}
                     className="px-4 py-2 text-xs uppercase tracking-wider text-neutral-400 hover:text-white border border-neutral-700 transition-colors cursor-pointer"
                   >
                     Batal

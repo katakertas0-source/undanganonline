@@ -57,7 +57,7 @@ export function invitationToDbRow(inv: Invitation) {
     active_addon_ids: inv.activeAddonIds || [],
 
     // Designer Overrides
-    custom_css: inv.customCss || null,
+    custom_css: inv.fairytaleConfig ? JSON.stringify(inv.fairytaleConfig) : (inv.customCss || null),
     designer_notes: inv.designerNotes || null,
     views_count: inv.viewsCount || 0,
     updated_at: new Date().toISOString(),
@@ -119,6 +119,14 @@ export function dbRowToInvitation(row: any): Invitation {
     activeAddonIds: row.active_addon_ids || [],
 
     customCss: row.custom_css || undefined,
+    fairytaleConfig: (() => {
+      try {
+        if (row.custom_css && typeof row.custom_css === 'string' && row.custom_css.trim().startsWith('{')) {
+          return JSON.parse(row.custom_css);
+        }
+      } catch {}
+      return undefined;
+    })(),
     designerNotes: row.designer_notes || undefined,
     thankYouMessage: row.thank_you_message || row.couple?.thankYouMessage || undefined,
     documentationPhotos: row.documentation_photos || row.couple?.documentationPhotos || [],
@@ -215,29 +223,52 @@ export function orderToDbRow(order: Order) {
     order_number: order.orderNumber,
     user_id: isValidUuid(order.userId) ? order.userId : null,
     invitation_id: order.invitationId,
+    package_id: order.packageId || null,
     items: order.items || [],
-    total_amount: order.totalAmount || 0,
-    discount_amount: order.discountAmount || 0,
-    net_amount: order.netAmount || 0,
-    payment_status: order.paymentStatus || 'PENDING',
+    total_amount: order.totalAmount || order.total || 0,
+    discount_amount: order.discountAmount || order.discount || 0,
+    net_amount: order.netAmount || order.total || 0,
+    subtotal: order.subtotal ?? order.totalAmount ?? 0,
+    addon_total: order.addonTotal ?? 0,
+    discount: order.discount ?? order.discountAmount ?? 0,
+    total: order.total ?? order.netAmount ?? order.totalAmount ?? 0,
+    payment_status: order.paymentStatus || (order.status ? order.status.toUpperCase() : 'PENDING'),
+    status: order.status || (order.paymentStatus ? order.paymentStatus.toLowerCase() : 'pending'),
     payment_method: order.paymentMethod || null,
     paid_at: order.paidAt || null,
+    lynk_ref_id: order.lynkRefId || null,
+    lynk_message_id: order.lynkMessageId || null,
+    updated_at: order.updatedAt || new Date().toISOString(),
   };
 }
 
 export function dbRowToOrder(row: any): Order {
+  const paymentStatus = (row.payment_status || (row.status ? row.status.toUpperCase() : 'PENDING')) as 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED';
+  const status = (row.status || paymentStatus.toLowerCase()) as 'pending' | 'paid' | 'failed' | 'expired' | 'cancelled';
+  const netAmount = Number(row.net_amount ?? row.total ?? row.total_amount ?? 0);
+  const totalAmount = Number(row.total_amount ?? row.subtotal ?? netAmount);
+
   return {
     id: row.id,
     orderNumber: row.order_number,
     userId: row.user_id || '',
     invitationId: row.invitation_id || '',
+    packageId: row.package_id || (Array.isArray(row.items) ? row.items.find((i: any) => i.itemType === 'PACKAGE')?.referenceId : undefined),
     items: row.items || [],
-    totalAmount: Number(row.total_amount) || 0,
-    discountAmount: Number(row.discount_amount) || 0,
-    netAmount: Number(row.net_amount) || 0,
-    paymentStatus: row.payment_status,
+    totalAmount,
+    discountAmount: Number(row.discount_amount ?? row.discount ?? 0),
+    netAmount,
+    subtotal: Number(row.subtotal ?? totalAmount),
+    addonTotal: Number(row.addon_total ?? 0),
+    discount: Number(row.discount ?? row.discount_amount ?? 0),
+    total: Number(row.total ?? netAmount),
+    paymentStatus,
+    status,
     paymentMethod: row.payment_method || undefined,
     paidAt: row.paid_at || undefined,
-    createdAt: row.created_at,
+    lynkRefId: row.lynk_ref_id || undefined,
+    lynkMessageId: row.lynk_message_id || undefined,
+    createdAt: row.created_at || new Date().toISOString(),
+    updatedAt: row.updated_at || undefined,
   };
 }

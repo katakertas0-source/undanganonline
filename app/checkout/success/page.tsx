@@ -28,14 +28,19 @@ import {
   Users,
   Smartphone,
   ChevronRight,
+  Clock,
+  RefreshCw,
+  AlertCircle,
+  ArrowLeft,
 } from 'lucide-react';
 
 function SuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const orderId = searchParams.get('orderId') || '';
+  const orderId = searchParams.get('orderId') || searchParams.get('order') || searchParams.get('refId') || '';
   const [order, setOrder] = useState<Order | null>(null);
   const [invitation, setInvitation] = useState<Invitation | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
   
   const [copiedGuest, setCopiedGuest] = useState(false);
   const [copiedUser, setCopiedUser] = useState(false);
@@ -43,14 +48,33 @@ function SuccessContent() {
   const [copiedAll, setCopiedAll] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Poll server to check payment status
   useEffect(() => {
-    if (orderId) {
+    let isMounted = true;
+
+    async function checkStatus() {
+      if (!orderId) return;
+
+      try {
+        const res = await fetch(`/api/orders/${orderId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.order && isMounted) {
+            setOrder(data.order);
+            if (data.invitation) {
+              setInvitation(data.invitation);
+            }
+            return;
+          }
+        }
+      } catch {}
+
+      // Fallback
       const ord = getOrderById(orderId);
-      if (ord) {
+      if (ord && isMounted) {
         setOrder(ord);
         const inv = getInvitationById(ord.invitationId);
         if (inv) {
-          // Ensure invitation has dashboard credentials
           if (!inv.dashboardUsername || !inv.dashboardPassword) {
             const username = inv.dashboardUsername || inv.slug;
             const password = inv.dashboardPassword || `KITA-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -67,13 +91,115 @@ function SuccessContent() {
         }
       }
     }
+
+    checkStatus();
+
+    // Auto-poll every 3 seconds if order is not yet paid
+    const pollInterval = setInterval(() => {
+      checkStatus();
+    }, 3500);
+
+    return () => {
+      isMounted = false;
+      clearInterval(pollInterval);
+    };
   }, [orderId]);
 
-  if (!invitation) {
+  const handleManualRefresh = async () => {
+    if (!orderId) return;
+    setIsVerifying(true);
+    try {
+      const res = await fetch(`/api/orders/${orderId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.order) {
+          setOrder(data.order);
+          if (data.invitation) setInvitation(data.invitation);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setTimeout(() => setIsVerifying(false), 500);
+    }
+  };
+
+  if (!order || !invitation) {
     return (
       <div className="py-28 text-center text-xs text-neutral-400">
-        Memuat detail konfirmasi undangan...
+        <div className="flex items-center justify-center gap-2">
+          <RefreshCw className="w-4 h-4 animate-spin text-neutral-400" />
+          <span>Memverifikasi konfirmasi pembayaran...</span>
+        </div>
       </div>
+    );
+  }
+
+  const isOrderPaid = order.paymentStatus === 'PAID' || order.status === 'paid';
+
+  // If order is still pending, display the "Menunggu Konfirmasi Pembayaran" state
+  if (!isOrderPaid) {
+    return (
+      <main className="max-w-xl mx-auto px-6 py-20 text-center space-y-6">
+        <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/30 flex items-center justify-center mx-auto shadow-xs">
+          <Clock className="w-8 h-8 animate-pulse text-amber-600" />
+        </div>
+
+        <div className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em] text-amber-800 font-medium bg-amber-50 border border-amber-200 px-3.5 py-1 rounded-full">
+          <Clock className="w-3.5 h-3.5 text-amber-600" />
+          <span>MENUNGGU KONFIRMASI PEMBAYARAN</span>
+        </div>
+
+        <h1 className="font-serif text-3xl sm:text-4xl uppercase tracking-tight text-neutral-950">
+          Pembayaran Sedang Diverifikasi
+        </h1>
+
+        <div className="bg-white border border-neutral-200 p-6 text-left space-y-3 shadow-xs">
+          <div className="flex justify-between items-center text-xs pb-3 border-b border-neutral-100">
+            <span className="text-neutral-500">Nomor Pesanan</span>
+            <span className="font-mono font-medium text-neutral-900">{order.orderNumber}</span>
+          </div>
+          <div className="flex justify-between items-center text-xs pb-3 border-b border-neutral-100">
+            <span className="text-neutral-500">Judul Undangan</span>
+            <span className="font-medium text-neutral-900">{invitation.title}</span>
+          </div>
+          <div className="flex justify-between items-center text-xs pb-3 border-b border-neutral-100">
+            <span className="text-neutral-500">Total Transaksi</span>
+            <span className="font-serif font-semibold text-neutral-900">
+              Rp {(order.total ?? order.totalAmount).toLocaleString('id-ID')}
+            </span>
+          </div>
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-neutral-500">Status Gateway</span>
+            <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded text-[10px] font-medium border border-amber-200">
+              PENDING / MENUNGGU WEBHOOK
+            </span>
+          </div>
+        </div>
+
+        <p className="text-xs text-neutral-500 font-light leading-relaxed max-w-md mx-auto">
+          Sistem kami secara otomatis mendengarkan konfirmasi pembayaran dari <strong>Lynk.id</strong>. Begitu webhook diterima dan diverifikasi, halaman ini akan otomatis berganti ke halaman sukses.
+        </p>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <button
+            onClick={handleManualRefresh}
+            disabled={isVerifying}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-xs uppercase tracking-widest bg-black text-white hover:bg-neutral-800 transition-colors cursor-pointer disabled:opacity-60"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isVerifying ? 'animate-spin' : ''}`} />
+            <span>{isVerifying ? 'Mengecek...' : 'Cek Ulang Status'}</span>
+          </button>
+
+          <Link
+            href={`/checkout/${order.id}`}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 text-xs uppercase tracking-widest border border-neutral-300 text-neutral-700 hover:text-black hover:border-black bg-white transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Halaman Pembayaran</span>
+          </Link>
+        </div>
+      </main>
     );
   }
 

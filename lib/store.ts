@@ -22,6 +22,8 @@ const STORAGE_KEYS = {
   DELETED_INVITATIONS: 'uo_deleted_invitation_ids',
   DELETED_TEMPLATES: 'uo_deleted_template_ids',
   TEMPLATE_PRICES: 'uo_template_custom_prices',
+  PACKAGE_PRICES: 'uo_package_custom_prices',
+  ADDON_PRICES: 'uo_addon_custom_prices',
   ORDERS: 'uo_orders',
   GUESTS: 'uo_guests',
   RSVPS: 'uo_rsvps',
@@ -246,13 +248,74 @@ export function getTemplateById(id: string): Template | undefined {
   return custom !== undefined ? { ...original, basePrice: custom } : original;
 }
 
+export function getCustomPackagePrices(): Record<string, number> {
+  return safeGetStorage<Record<string, number>>(STORAGE_KEYS.PACKAGE_PRICES, {});
+}
+
 export function getAllPackages(): DiyPackage[] {
-  return DIY_PACKAGES;
+  const customPrices = getCustomPackagePrices();
+  return DIY_PACKAGES.map((pkg) => ({
+    ...pkg,
+    price: customPrices[pkg.id] !== undefined ? customPrices[pkg.id] : pkg.price,
+  }));
+}
+
+export function getAllPackagesWithStatus(): Array<DiyPackage & { isCustomPrice?: boolean; defaultBasePrice: number }> {
+  const customPrices = getCustomPackagePrices();
+  return DIY_PACKAGES.map((pkg) => {
+    const custom = customPrices[pkg.id];
+    return {
+      ...pkg,
+      price: custom !== undefined ? custom : pkg.price,
+      defaultBasePrice: pkg.price,
+      isCustomPrice: custom !== undefined,
+    };
+  });
+}
+
+export function updatePackagePrice(packageId: string, newPrice: number): void {
+  const prices = { ...getCustomPackagePrices() };
+  const validPrice = Math.max(0, Math.round(Number(newPrice) || 0));
+  prices[packageId] = validPrice;
+  safeSetStorage(STORAGE_KEYS.PACKAGE_PRICES, prices);
+
+  // Sync to Supabase packages table asynchronously
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      supabase.from('packages').update({ price: validPrice, updated_at: new Date().toISOString() }).eq('id', packageId).then();
+    } catch {}
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('uo_store_updated'));
+  }
+}
+
+export function resetPackagePrice(packageId: string): void {
+  const prices = { ...getCustomPackagePrices() };
+  delete prices[packageId];
+  safeSetStorage(STORAGE_KEYS.PACKAGE_PRICES, prices);
+
+  const defaultPkg = DIY_PACKAGES.find((p) => p.id === packageId);
+  if (defaultPkg) {
+    const supabase = getSupabase();
+    if (supabase) {
+      try {
+        supabase.from('packages').update({ price: defaultPkg.price, updated_at: new Date().toISOString() }).eq('id', packageId).then();
+      } catch {}
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('uo_store_updated'));
+  }
 }
 
 export function getPackageById(packageId?: string): DiyPackage {
-  const found = DIY_PACKAGES.find((p) => p.id === packageId);
-  return found || DIY_PACKAGES[0];
+  const packages = getAllPackages();
+  const found = packages.find((p) => p.id === packageId);
+  return found || packages[0];
 }
 
 export function getTemplatesForPackage(packageId?: string): Template[] {
@@ -261,12 +324,73 @@ export function getTemplatesForPackage(packageId?: string): Template[] {
   return activeTemplates.filter((t) => pkg.allowedTemplateIds.includes(t.id));
 }
 
+export function getCustomAddonPrices(): Record<string, number> {
+  return safeGetStorage<Record<string, number>>(STORAGE_KEYS.ADDON_PRICES, {});
+}
+
 export function getAllAddons(): Addon[] {
-  return ADDONS;
+  const customPrices = getCustomAddonPrices();
+  return ADDONS.map((addon) => ({
+    ...addon,
+    defaultPrice: customPrices[addon.id] !== undefined ? customPrices[addon.id] : addon.defaultPrice,
+  }));
+}
+
+export function getAllAddonsWithStatus(): Array<Addon & { isCustomPrice?: boolean; defaultBasePrice: number }> {
+  const customPrices = getCustomAddonPrices();
+  return ADDONS.map((addon) => {
+    const custom = customPrices[addon.id];
+    return {
+      ...addon,
+      defaultPrice: custom !== undefined ? custom : addon.defaultPrice,
+      defaultBasePrice: addon.defaultPrice,
+      isCustomPrice: custom !== undefined,
+    };
+  });
+}
+
+export function updateAddonPrice(addonId: string, newPrice: number): void {
+  const prices = { ...getCustomAddonPrices() };
+  const validPrice = Math.max(0, Math.round(Number(newPrice) || 0));
+  prices[addonId] = validPrice;
+  safeSetStorage(STORAGE_KEYS.ADDON_PRICES, prices);
+
+  // Sync to Supabase addons table asynchronously
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      supabase.from('addons').update({ price: validPrice, updated_at: new Date().toISOString() }).eq('id', addonId).then();
+    } catch {}
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('uo_store_updated'));
+  }
+}
+
+export function resetAddonPrice(addonId: string): void {
+  const prices = { ...getCustomAddonPrices() };
+  delete prices[addonId];
+  safeSetStorage(STORAGE_KEYS.ADDON_PRICES, prices);
+
+  const defaultAddon = ADDONS.find((a) => a.id === addonId);
+  if (defaultAddon) {
+    const supabase = getSupabase();
+    if (supabase) {
+      try {
+        supabase.from('addons').update({ price: defaultAddon.defaultPrice, updated_at: new Date().toISOString() }).eq('id', addonId).then();
+      } catch {}
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('uo_store_updated'));
+  }
 }
 
 export function getAddonById(id: string): Addon | undefined {
-  return ADDONS.find((a) => a.id === id);
+  const addons = getAllAddons();
+  return addons.find((a) => a.id === id);
 }
 
 export function getSampleInvitationForTemplate(templateId: string): Invitation {
@@ -294,7 +418,7 @@ export function getAllInvitations(): Invitation[] {
     if (existingIdx === -1) {
       merged.push(init);
     } else {
-      if (['inv-julian-nadia', 'inv-celine', 'inv-nocturne', 'inv-maya-adrian', 'inv-clara', 'inv-sora', 'inv-roma', 'inv-elodie', 'inv-mahadewi-bali', 'inv-bali-heritage', 'inv-jawa-living-heritage'].includes(merged[existingIdx].id)) {
+      if (['inv-julian-nadia', 'inv-celine', 'inv-nocturne', 'inv-maya-adrian', 'inv-clara', 'inv-sora', 'inv-roma', 'inv-elodie', 'inv-mahadewi-bali', 'inv-bali-heritage', 'inv-jawa-living-heritage', 'inv-cinematic-fairytale'].includes(merged[existingIdx].id)) {
         merged[existingIdx] = {
           ...merged[existingIdx],
           ...init,
@@ -559,38 +683,62 @@ export function createDraftInvitation(
   const isMahadewi = template.id === 'mahadewi-bali';
   const isBaliHeritage = template.id === 'bali-heritage';
   const isJawaLiving = template.id === 'jawa-living-heritage';
+  const isFairytale = template.id === 'cinematic-fairytale' || template.archetype === 'cinematic-fairytale';
 
   const newInvitation: Invitation = {
     id,
     userId: 'user-default-1',
-    title: isJawaLiving ? 'Pawiwahan Danang & Sekar' : isBaliHeritage ? 'Pawiwahan Putu & Sinta' : isMahadewi ? 'Pawiwahan Agung Rama & Gayatri' : 'The Wedding Celebration',
+    title: isFairytale ? 'The Wedding of Arthur & Amanda' : isJawaLiving ? 'Pawiwahan Danang & Sekar' : isBaliHeritage ? 'Pawiwahan Putu & Sinta' : isMahadewi ? 'Pawiwahan Agung Rama & Gayatri' : 'The Wedding Celebration',
     slug,
     serviceType,
     status: 'DRAFT',
     packageId: pkg.id,
     templateId: template.id,
     fontPreset: 'editorial-cormorant',
-    colorPreset: isJawaLiving ? 'warm-linen' : isBaliHeritage ? 'nocturne-black' : isMahadewi ? 'warm-linen' : template.theme.isDark ? 'nocturne-black' : 'offwhite-noir',
-    layoutPreset: isJawaLiving || isBaliHeritage || isMahadewi ? 'framed-portrait' : 'split-editorial',
+    colorPreset: isFairytale ? 'warm-linen' : isJawaLiving ? 'warm-linen' : isBaliHeritage ? 'nocturne-black' : isMahadewi ? 'warm-linen' : template.theme.isDark ? 'nocturne-black' : 'offwhite-noir',
+    layoutPreset: isFairytale || isJawaLiving || isBaliHeritage || isMahadewi ? 'framed-portrait' : 'split-editorial',
     animationPreset: 'curtain-reveal',
     coverImageUrl: template.coverImageUrl,
-    coverTitle: isJawaLiving || isBaliHeritage ? 'PAWIWAHAN' : isMahadewi ? 'PAWIWAHAN AGUNG · BALINESE HERITAGE' : undefined,
-    openingQuote: isJawaLiving
+    coverTitle: isFairytale ? 'THE WEDDING OF' : isJawaLiving || isBaliHeritage ? 'PAWIWAHAN' : isMahadewi ? 'PAWIWAHAN AGUNG · BALINESE HERITAGE' : undefined,
+    openingQuote: isFairytale
+      ? 'Once in a while, right in the middle of an ordinary life, love gives us a fairytale.'
+      : isJawaLiving
       ? 'Awit saking berkah rahmat Gusti Kang Murbeng Dumadi, lumantar tulusaning tresna, kula kekalih badhe ngleksanani upacara Pawiwahan Ageng.'
       : isBaliHeritage
       ? 'Kami dipertemukan oleh waktu, dipersatukan oleh cinta, dan akan melangkah bersama dalam ikatan suci Pawiwahan.'
       : isMahadewi
       ? 'Atas Asung Kertha Wara Nugraha Ida Sang Hyang Widhi Wasa, kami bermaksud menyelenggarakan Upacara Manusa Yadnya Pawiwahan putra-putri kami.'
       : 'A celebration of love, commitment, and new beginnings.',
-    holyVerse: isJawaLiving
+    holyVerse: isFairytale
+      ? 'Two souls with but a single thought, two hearts that beat as one.'
+      : isJawaLiving
       ? 'Dua insan, satu perjalanan, dalam restu dan berkah luhur.'
       : isBaliHeritage
       ? 'Dua Hati, Satu Perjalanan, Dalam Restu Semesta.'
       : isMahadewi
       ? 'Ihaiva stam ma vi yaustam visvam ayur vyasnutam kridantau putrair naptrbhih modamanau sve grhe. (Rg Veda X.85.42) — Wahai pasangan pengantin, semoga senantiasa bersatu dalam cinta kasih dan damai abadi.'
       : 'Two lives, two hearts, joined together in friendship, united forever in love.',
-    eventDate: isJawaLiving ? '2026-11-28' : isBaliHeritage ? '2026-10-24' : isMahadewi ? '2026-12-18' : '2026-11-20',
-    couple: isJawaLiving
+    eventDate: isFairytale ? '2026-12-20' : isJawaLiving ? '2026-11-28' : isBaliHeritage ? '2026-10-24' : isMahadewi ? '2026-12-18' : '2026-11-20',
+    couple: isFairytale
+      ? {
+          groomName: 'Arthur Putra Santoso',
+          groomNickname: 'Arthur',
+          groomFather: 'Bapak Budi Santoso',
+          groomMother: 'Ibu Ratna Dewi',
+          groomBio: 'Putra pertama dari Bapak Budi Santoso & Ibu Ratna Dewi',
+          groomPhotoUrl: '/images/fairytale-arthur-portrait.jpg',
+          groomInstagram: '@arthur.santoso',
+          groomLabelBadge: 'The Groom',
+          brideName: 'Amanda Kirana',
+          brideNickname: 'Amanda',
+          brideFather: 'Bapak Dedi Wijaya',
+          brideMother: 'Ibu Sari Lestari',
+          brideBio: 'Putri kedua dari Bapak Dedi Wijaya & Ibu Sari Lestari',
+          bridePhotoUrl: '/images/fairytale-amanda-portrait.jpg',
+          brideInstagram: '@amanda.kirana',
+          brideLabelBadge: 'The Bride',
+        }
+      : isJawaLiving
       ? {
           groomName: 'Raden Mas Danang Wicaksono, S.T.',
           groomNickname: 'Danang',
@@ -804,6 +952,33 @@ export function createDraftInvitation(
             orderIndex: 2,
           },
         ]
+      : isFairytale
+      ? [
+          {
+            id: 'ev-ft1',
+            name: 'Akad Nikah',
+            date: '2026-12-20',
+            startTime: '08:00',
+            endTime: '10:00',
+            timezone: 'WIB',
+            venueName: 'Royal Garden Palace',
+            address: 'Jl. Raya Uluwatu No. 123, Bali',
+            googleMapsUrl: 'https://maps.google.com/?q=Royal+Garden+Palace+Uluwatu+Bali',
+            orderIndex: 0,
+          },
+          {
+            id: 'ev-ft2',
+            name: 'Resepsi',
+            date: '2026-12-20',
+            startTime: '18:00',
+            endTime: '22:00',
+            timezone: 'WIB',
+            venueName: 'Royal Garden Palace',
+            address: 'Jl. Raya Uluwatu No. 123, Bali',
+            googleMapsUrl: 'https://maps.google.com/?q=Royal+Garden+Palace+Uluwatu+Bali',
+            orderIndex: 1,
+          },
+        ]
       : [
           {
             id: 'event-1',
@@ -830,60 +1005,152 @@ export function createDraftInvitation(
             orderIndex: 1,
           },
         ],
-    gallery: [
-      {
-        id: 'gal-new-1',
-        imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop',
-        caption: 'Our golden hour memories',
-        aspectRatio: '4:5',
-        orderIndex: 0,
-      },
-      {
-        id: 'gal-new-2',
-        imageUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800&auto=format&fit=crop',
-        caption: 'Sunset romance by the shore',
-        aspectRatio: '1:1',
-        orderIndex: 1,
-      },
-      {
-        id: 'gal-new-3',
-        imageUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?q=80&w=800&auto=format&fit=crop',
-        caption: 'Intimate prewedding vows rehearsal',
-        aspectRatio: '4:5',
-        orderIndex: 2,
-      },
-      {
-        id: 'gal-new-4',
-        imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800&auto=format&fit=crop',
-        caption: 'Under the starlight celebration',
-        aspectRatio: '16:9',
-        orderIndex: 3,
-      },
-    ],
-    loveStories: [
-      {
-        id: 'story-new-1',
-        yearOrDate: '2022',
-        title: 'Where It All Began',
-        story: 'Our journey began with a simple hello that changed our lives forever.',
-        orderIndex: 0,
-      },
-    ],
-    gifts: [
-      {
-        id: 'gift-new-1',
-        type: 'BANK',
-        providerName: 'BCA (Bank Central Asia)',
-        accountNumber: '1234567890',
-        accountHolder: 'Nama Penerima',
-      },
-    ],
+    gallery: isFairytale
+      ? [
+          {
+            id: 'gal-ft1',
+            imageUrl: '/images/fairytale-couple-together.jpg',
+            caption: 'A Journey Into Our Love Story',
+            aspectRatio: '4:5',
+            orderIndex: 0,
+            category: 'prewedding',
+          },
+          {
+            id: 'gal-ft2',
+            imageUrl: '/images/fairytale-palace-garden.jpg',
+            caption: 'The Fairytale Palace & Rose Garden',
+            aspectRatio: '16:9',
+            orderIndex: 1,
+            category: 'prewedding',
+          },
+          {
+            id: 'gal-ft3',
+            imageUrl: '/images/fairytale-amanda-portrait.jpg',
+            caption: 'The Graceful Bride',
+            aspectRatio: '4:5',
+            orderIndex: 2,
+            category: 'prewedding',
+          },
+          {
+            id: 'gal-ft4',
+            imageUrl: '/images/fairytale-arthur-portrait.jpg',
+            caption: 'The Noble Groom',
+            aspectRatio: '4:5',
+            orderIndex: 3,
+            category: 'prewedding',
+          },
+        ]
+      : [
+          {
+            id: 'gal-new-1',
+            imageUrl: 'https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=800&auto=format&fit=crop',
+            caption: 'Our golden hour memories',
+            aspectRatio: '4:5',
+            orderIndex: 0,
+          },
+          {
+            id: 'gal-new-2',
+            imageUrl: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=800&auto=format&fit=crop',
+            caption: 'Sunset romance by the shore',
+            aspectRatio: '1:1',
+            orderIndex: 1,
+          },
+          {
+            id: 'gal-new-3',
+            imageUrl: 'https://images.unsplash.com/photo-1606800052052-a08af7148866?q=80&w=800&auto=format&fit=crop',
+            caption: 'Intimate prewedding vows rehearsal',
+            aspectRatio: '4:5',
+            orderIndex: 2,
+          },
+          {
+            id: 'gal-new-4',
+            imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=800&auto=format&fit=crop',
+            caption: 'Under the starlight celebration',
+            aspectRatio: '16:9',
+            orderIndex: 3,
+          },
+        ],
+    loveStories: isFairytale
+      ? [
+          {
+            id: 'story-ft1',
+            yearOrDate: '2020',
+            title: 'Pertemuan',
+            story: 'Kisah ini dimulai dari sebuah pertemuan yang tak direncanakan.',
+            photoUrl: '/images/fairytale-couple-together.jpg',
+            orderIndex: 0,
+          },
+          {
+            id: 'story-ft2',
+            yearOrDate: '2022',
+            title: 'Perjalanan',
+            story: 'Kami tumbuh bersama menghadapi banyak cerita dan pengalaman.',
+            photoUrl: '/images/fairytale-amanda-portrait.jpg',
+            orderIndex: 1,
+          },
+          {
+            id: 'story-ft3',
+            yearOrDate: '2026',
+            title: 'Selamanya',
+            story: 'Kini kami siap melangkah ke babak baru dalam hidup kami.',
+            photoUrl: '/images/fairytale-arthur-portrait.jpg',
+            orderIndex: 2,
+          },
+        ]
+      : [
+          {
+            id: 'story-new-1',
+            yearOrDate: '2022',
+            title: 'Where It All Began',
+            story: 'Our journey began with a simple hello that changed our lives forever.',
+            orderIndex: 0,
+          },
+        ],
+    gifts: isFairytale
+      ? [
+          {
+            id: 'gift-ft1',
+            type: 'BANK',
+            providerName: 'BCA (Bank Central Asia)',
+            accountNumber: '7310 9821 55',
+            accountHolder: 'Arthur Putra Santoso',
+          },
+          {
+            id: 'gift-ft2',
+            type: 'BANK',
+            providerName: 'Bank Mandiri',
+            accountNumber: '1370 0892 4110',
+            accountHolder: 'Amanda Kirana',
+          },
+        ]
+      : [
+          {
+            id: 'gift-new-1',
+            type: 'BANK',
+            providerName: 'BCA (Bank Central Asia)',
+            accountNumber: '1234567890',
+            accountHolder: 'Nama Penerima',
+          },
+        ],
     musicUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=romantic-piano-112199.mp3',
-    musicTitle: isJawaLiving ? 'Bunga Abadi — Rio Clappy' : isBaliHeritage ? 'Gamelan Rindik Suara Dewata' : undefined,
+    musicTitle: isFairytale ? 'Fairytale Romance — Orchestral Piano' : isJawaLiving ? 'Bunga Abadi — Rio Clappy' : isBaliHeritage ? 'Gamelan Rindik Suara Dewata' : undefined,
     videoUrl:
       template.archetype === 'dark-luxury-cinema' || template.archetype === 'romantic-cinema'
         ? 'https://www.youtube.com/watch?v=ScMzIvxBSi4'
         : undefined,
+    fairytaleConfig: isFairytale
+      ? {
+          envelopeColor: 'ivory',
+          sealType: 'royal-crimson',
+          instructionText: 'Buka Undangan',
+          enableOpeningAnimation: true,
+          zoomSpeed: 'cinematic',
+          sceneStyle: 'royal-palace',
+          birdsMotion: 'active',
+          treesBreeze: 'gentle',
+          titlePosition: 'center',
+        }
+      : undefined,
     sectionVisibility: {
       cover: true,
       profile: true,
@@ -1010,22 +1277,43 @@ export function createOrderForInvitation(invitationId: string): Order {
     })),
   ];
 
+  const addonTotal = selectedPaidAddons.reduce((sum, item) => sum + item.defaultPrice, 0);
+  const now = new Date().toISOString();
+
   const newOrder: Order = {
     id: 'ord-' + Math.random().toString(36).substring(2, 9),
     orderNumber,
     userId: invitation.userId,
     invitationId: invitation.id,
+    packageId: pkg.id,
     items,
     totalAmount,
     discountAmount: 0,
     netAmount: totalAmount,
+    subtotal: basePrice,
+    addonTotal,
+    discount: 0,
+    total: totalAmount,
     paymentStatus: 'PENDING',
-    createdAt: new Date().toISOString(),
+    status: 'pending',
+    createdAt: now,
+    updatedAt: now,
   };
 
   const orders = safeGetStorage<Order[]>(STORAGE_KEYS.ORDERS, []);
   orders.unshift(newOrder);
   safeSetStorage(STORAGE_KEYS.ORDERS, orders);
+
+  // Background sync to Supabase if configured
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const dbRow = orderToDbRow(newOrder);
+      supabase.from('orders').insert(dbRow).then(({ error }) => {
+        if (error) console.warn('[Supabase Sync] Error inserting order:', error.message);
+      });
+    } catch {}
+  }
 
   return newOrder;
 }

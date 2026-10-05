@@ -20,7 +20,20 @@ export type TemplateArchetype =
   | 'cinematic-motion'
   | 'balinese-heritage'
   | 'balinese-heritage-luxury'
-  | 'jawa-living-heritage';
+  | 'jawa-living-heritage'
+  | 'cinematic-fairytale';
+
+export interface FairytaleTemplateConfig {
+  envelopeColor?: 'ivory' | 'blush-cream' | 'sage' | 'royal-navy';
+  sealType?: 'royal-crimson' | 'botanical-wax' | 'monogram-gold' | 'royal-crest';
+  instructionText?: string;
+  enableOpeningAnimation?: boolean;
+  zoomSpeed?: 'cinematic' | 'slow' | 'fast';
+  sceneStyle?: 'royal-palace' | 'enchanted-garden' | 'sunset-palace';
+  birdsMotion?: 'ambient' | 'active' | 'off';
+  treesBreeze?: 'gentle' | 'vibrant' | 'off';
+  titlePosition?: 'center' | 'bottom';
+}
 
 export interface DemoCoupleMeta {
   groomName: string;
@@ -236,6 +249,7 @@ export interface Invitation {
   // Custom Designer overrides
   customCss?: string;
   designerNotes?: string;
+  fairytaleConfig?: FairytaleTemplateConfig;
 
   // Post-Event & Memory Vault
   thankYouMessage?: string;
@@ -266,15 +280,46 @@ export interface Order {
   orderNumber: string;
   userId: string;
   invitationId: string;
+  packageId?: string;
   items: OrderItem[];
   totalAmount: number;
   discountAmount: number;
   netAmount: number;
+  subtotal?: number;
+  addonTotal?: number;
+  discount?: number;
+  total?: number;
   paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED';
+  status?: 'pending' | 'paid' | 'failed' | 'expired' | 'cancelled';
   paymentMethod?: string;
   paidAt?: string;
+  lynkRefId?: string;
+  lynkMessageId?: string;
   dashboardUsername?: string;
   dashboardPassword?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface OrderAddonSnapshot {
+  id: string;
+  orderId: string;
+  addonId: string;
+  nameSnapshot: string;
+  priceSnapshot: number;
+  createdAt: string;
+}
+
+export interface PaymentWebhookLog {
+  id: string;
+  provider: string;
+  event: string;
+  messageId: string;
+  refId?: string;
+  signature?: string;
+  payload: Record<string, unknown>;
+  processed: boolean;
+  processedAt?: string;
   createdAt: string;
 }
 

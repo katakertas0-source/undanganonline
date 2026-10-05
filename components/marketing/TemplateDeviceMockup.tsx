@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Eye, ArrowRight, Lock, Check, Film } from 'lucide-react';
+import { Eye, ArrowRight, Lock, Check, Film, Sparkles } from 'lucide-react';
 import { Template } from '@/types';
 import {
   BalineseGapuraIcon,
@@ -18,6 +18,7 @@ import {
   JavaneseCarvedArchTop,
   JavaneseCarvedArchBottom,
 } from '@/components/ui/JavaneseOrnaments';
+import { FairytaleWaxSeal } from '@/components/ui/FairytaleOrnaments';
 
 interface TemplateDeviceMockupProps {
   template: Template;
@@ -426,6 +427,72 @@ export function TemplateDeviceMockup({
       );
     }
 
+    // 9. Cinematic Fairytale (CINEMATIC FAIRYTALE) — Full-Screen Embossed Envelope with 3D Wax Seal
+    if (archetype === 'cinematic-fairytale') {
+      return (
+        <div className="px-2 pt-3 pb-2 flex flex-col justify-between h-[calc(100%-24px)] text-center bg-[#E5ECE1] text-[#2D3C2A] relative overflow-hidden">
+          {/* Luxury Embossed Sage Paper Texture Background */}
+          <div className="absolute inset-0 z-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/fairytale-envelope-texture.jpg"
+              alt="Envelope Texture"
+              className="w-full h-full object-cover object-center opacity-85 mix-blend-multiply"
+            />
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  'radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.4) 0%, rgba(30,45,25,0.12) 100%)',
+              }}
+            />
+          </div>
+
+          {/* Top Flap Fold Outline */}
+          <div className="absolute inset-x-0 top-0 h-[42%] z-10 pointer-events-none">
+            <svg viewBox="0 0 200 110" fill="none" className="w-full h-full">
+              <path
+                d="M0 0 L100 108 L200 0"
+                stroke="rgba(255,255,255,0.7)"
+                strokeWidth="1.2"
+              />
+              <path
+                d="M0 0 L100 110 L200 0"
+                stroke="rgba(40,55,35,0.2)"
+                strokeWidth="1.5"
+              />
+            </svg>
+          </div>
+
+          {/* Center 3D Crimson Red Wax Seal */}
+          <div className="relative z-20 my-auto flex flex-col items-center justify-center pt-2">
+            <div className="w-12 h-12 relative flex items-center justify-center drop-shadow-md">
+              <FairytaleWaxSeal
+                className="w-12 h-12"
+                variant="royal-crimson"
+                monogramText={`${demo.groomNickname?.[0] || 'A'} & ${demo.brideNickname?.[0] || 'A'}`}
+              />
+            </div>
+          </div>
+
+          {/* Bottom Title & Script Block (Reference Image 5) */}
+          <div className="space-y-0.5 relative z-10 pb-1 flex flex-col items-center shrink-0">
+            <p className="font-serif italic text-[11px] sm:text-[12px] text-[#2F3E2B] drop-shadow-xs">
+              You are invited
+            </p>
+            <p className="text-[5px] uppercase tracking-[0.24em] text-[#52634E] font-serif font-medium">
+              THE WEDDING OF {demo.groomNickname?.toUpperCase()} &amp; {demo.brideNickname?.toUpperCase()}
+            </p>
+            <div className="mt-1 inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[5px] uppercase tracking-widest bg-[#2E3C2B] text-white shadow-sm border border-[#D8B46C]/40">
+              <Sparkles className="w-2 h-2 text-[#D8B46C]" />
+              <span>Buka Undangan</span>
+              <span className="text-[4.5px]">→</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // 8. Jawa Living Heritage (JAWA LIVING HERITAGE) — Authentic Heritage Theater Stage
     if (archetype === 'jawa-living-heritage') {
       return (
@@ -733,6 +800,41 @@ export function TemplateDeviceMockup({
           </div>
           <div className="text-center z-10 pb-0.5 flex flex-col items-center">
             <JavaneseFloralDivider className="w-20 h-3 text-[#B3945A]" />
+          </div>
+        </div>
+      );
+    }
+
+    // Cinematic Fairytale: Couple in Rose Garden Terrace
+    if (archetype === 'cinematic-fairytale') {
+      return (
+        <div className="relative flex-1 overflow-hidden mt-1 bg-[#FAF7F2] text-[#3C3028] flex flex-col justify-between p-2.5">
+          <div className="text-center pt-1 z-10">
+            <p className="text-[6.5px] uppercase tracking-[0.24em] text-[#C69C54] font-serif font-medium">
+              OUR LOVE STORY
+            </p>
+            <p className="font-serif italic text-[7.5px] text-[#7A6B5C] mt-0.5">
+              Arthur &amp; Amanda
+            </p>
+          </div>
+          <div className="relative mx-auto w-full max-w-[130px] aspect-[3/4] rounded-sm overflow-hidden border border-[#C69C54]/30 shadow-md">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={secondaryImage}
+              alt="Fairytale Couple"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+            <div className="absolute bottom-1 inset-x-0 text-center">
+              <span className="text-[6.5px] font-serif italic text-white/90">
+                Fairytale · 20 . 12 . 2026
+              </span>
+            </div>
+          </div>
+          <div className="text-center z-10 pb-0.5 flex flex-col items-center">
+            <span className="text-[6px] tracking-wider text-[#C69C54] uppercase font-serif">
+              ✦ A Fairytale Romance ✦
+            </span>
           </div>
         </div>
       );

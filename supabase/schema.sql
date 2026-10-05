@@ -306,3 +306,112 @@ WITH CHECK (bucket_id = 'invitation-assets');
 CREATE POLICY "Allow update and delete for invitation assets"
 ON storage.objects FOR ALL
 USING (bucket_id = 'invitation-assets');
+
+-- ==============================================================================
+-- 11. PAYMENT SYSTEM (Packages, Addons, Order Addons, Payment Webhooks)
+-- ==============================================================================
+
+-- 11.1 PACKAGES TABLE
+CREATE TABLE IF NOT EXISTS public.packages (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  tier TEXT NOT NULL DEFAULT 'essential',
+  price NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 11.2 ADDONS TABLE
+CREATE TABLE IF NOT EXISTS public.addons (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  code TEXT NOT NULL,
+  feature_key TEXT NOT NULL,
+  category TEXT NOT NULL DEFAULT 'feature',
+  price NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 11.3 PACKAGE_ADDONS MATRIX
+CREATE TABLE IF NOT EXISTS public.package_addons (
+  package_id TEXT NOT NULL REFERENCES public.packages(id) ON DELETE CASCADE,
+  addon_id TEXT NOT NULL REFERENCES public.addons(id) ON DELETE CASCADE,
+  price_override NUMERIC(12, 2),
+  is_available BOOLEAN NOT NULL DEFAULT true,
+  PRIMARY KEY (package_id, addon_id)
+);
+
+-- 11.4 EXTEND ORDERS TABLE
+ALTER TABLE public.orders 
+  ADD COLUMN IF NOT EXISTS package_id TEXT,
+  ADD COLUMN IF NOT EXISTS subtotal NUMERIC(12, 2),
+  ADD COLUMN IF NOT EXISTS addon_total NUMERIC(12, 2),
+  ADD COLUMN IF NOT EXISTS discount NUMERIC(12, 2) DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS total NUMERIC(12, 2),
+  ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'pending',
+  ADD COLUMN IF NOT EXISTS lynk_ref_id TEXT,
+  ADD COLUMN IF NOT EXISTS lynk_message_id TEXT,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+
+CREATE INDEX IF NOT EXISTS idx_orders_lynk_ref_id ON public.orders(lynk_ref_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders(status);
+
+-- 11.5 ORDER_ADDONS SNAPSHOT TABLE
+CREATE TABLE IF NOT EXISTS public.order_addons (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id UUID NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,
+  addon_id TEXT NOT NULL,
+  name_snapshot TEXT NOT NULL,
+  price_snapshot NUMERIC(12, 2) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_order_addons_order_id ON public.order_addons(order_id);
+
+-- 11.6 PAYMENT_WEBHOOKS AUDIT & IDEMPOTENCY TABLE
+CREATE TABLE IF NOT EXISTS public.payment_webhooks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  provider TEXT NOT NULL DEFAULT 'lynk',
+  event TEXT NOT NULL,
+  message_id TEXT NOT NULL UNIQUE,
+  ref_id TEXT,
+  signature TEXT,
+  payload JSONB NOT NULL,
+  processed BOOLEAN NOT NULL DEFAULT false,
+  processed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_payment_webhooks_message_id ON public.payment_webhooks(message_id);
+CREATE INDEX IF NOT EXISTS idx_payment_webhooks_ref_id ON public.payment_webhooks(ref_id);
+
+-- 11.7 RLS FOR PAYMENT TABLES
+ALTER TABLE public.packages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.addons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.package_addons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_addons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_webhooks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public can view active packages" ON public.packages
+  FOR SELECT USING (active = true);
+
+CREATE POLICY "Public can view active addons" ON public.addons
+  FOR SELECT USING (active = true);
+
+CREATE POLICY "Public can view package addons" ON public.package_addons
+  FOR SELECT USING (is_available = true);
+
+CREATE POLICY "Users can view own order addons" ON public.order_addons
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM public.orders
+      WHERE orders.id = order_addons.order_id
+      AND (orders.user_id = auth.uid() OR orders.user_id IS NULL)
+    )
+  );
+
+CREATE POLICY "Service role access for payment webhooks" ON public.payment_webhooks
+  FOR ALL TO service_role USING (true);

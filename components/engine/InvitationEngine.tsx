@@ -21,6 +21,7 @@ import { GuestPassCard } from './GuestPassCard';
 import { DocumentationGallerySection } from './DocumentationGallerySection';
 import { BaliHeritageLuxuryTemplate } from './templates/BaliHeritageLuxuryTemplate';
 import { JawaLivingHeritageTemplate } from './templates/JawaLivingHeritageTemplate';
+import { CinematicFairytaleTemplate } from './templates/CinematicFairytaleTemplate';
 
 interface InvitationEngineProps {
   invitation: Invitation;
@@ -44,6 +45,22 @@ export function InvitationEngine({
   activeSectionTarget,
 }: InvitationEngineProps) {
   const template = getTemplateById(invitation.templateId);
+
+  // Dedicated Archetype Pipeline: Cinematic Fairytale
+  if (template?.archetype === 'cinematic-fairytale' || invitation.templateId === 'cinematic-fairytale') {
+    return (
+      <CinematicFairytaleTemplate
+        invitation={invitation}
+        guestName={guestName}
+        isPreview={isPreview}
+        forceMobile={forceMobile}
+        initialOpen={initialOpen}
+        isOpenControlled={isOpenControlled}
+        onOpenStateChange={onOpenStateChange}
+        activeSectionTarget={activeSectionTarget}
+      />
+    );
+  }
 
   // Dedicated Archetype Pipeline: Bali Heritage Luxury
   if (template?.archetype === 'balinese-heritage-luxury' || invitation.templateId === 'bali-heritage') {
