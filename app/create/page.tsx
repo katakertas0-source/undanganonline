@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { MinimalNav } from '@/components/marketing/MinimalNav';
 import { MinimalFooter } from '@/components/marketing/MinimalFooter';
-import { getAllTemplates, createDraftInvitation } from '@/lib/store';
+import { getAllTemplates, getAllTemplatesAsync, createDraftInvitation } from '@/lib/store';
 import { ArrowRight, Check } from 'lucide-react';
 import { TemplateDeviceMockup } from '@/components/marketing/TemplateDeviceMockup';
 import { Template } from '@/types';
@@ -19,6 +19,11 @@ function CreateForm() {
 
   useEffect(() => {
     setTemplates(getAllTemplates());
+    getAllTemplatesAsync().then((fresh) => {
+      if (Array.isArray(fresh) && fresh.length > 0) {
+        setTemplates(fresh);
+      }
+    });
   }, []);
 
   const matchedTemplate = initialTemplateParam

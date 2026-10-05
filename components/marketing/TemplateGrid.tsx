@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getAllTemplates } from '@/lib/store';
+import { getAllTemplates, getAllTemplatesAsync } from '@/lib/store';
 import { TemplateDeviceMockup } from './TemplateDeviceMockup';
 import { DIY_PACKAGES, TEMPLATES } from '@/lib/data/catalog';
 
@@ -11,11 +11,16 @@ export function TemplateGrid() {
   const [selectedFilter, setSelectedFilter] = useState<string>('All');
 
   useEffect(() => {
-    // Sync with client-side store (deleted items, custom prices) after initial mount
+    // Initial local cache view, then immediately update with global DB status from API
     setTemplates(getAllTemplates());
+    getAllTemplatesAsync().then((fresh) => {
+      if (Array.isArray(fresh)) setTemplates(fresh);
+    });
 
     const handleUpdate = () => {
-      setTemplates(getAllTemplates());
+      getAllTemplatesAsync().then((fresh) => {
+        if (Array.isArray(fresh)) setTemplates(fresh);
+      });
     };
     window.addEventListener('uo_store_updated', handleUpdate);
     return () => window.removeEventListener('uo_store_updated', handleUpdate);

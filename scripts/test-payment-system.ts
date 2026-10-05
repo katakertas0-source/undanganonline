@@ -1,3 +1,6 @@
+import { loadEnvConfig } from '@next/env';
+loadEnvConfig(process.cwd());
+
 import { calculateAuthoritativePricing, createInternalOrder, findOrderByRefId, markOrderPaidAuthoritative } from '../lib/billing/orders';
 import { getEntitlements, hasFeature } from '../lib/billing/entitlements';
 import { calculateLynkSignature, verifyLynkSignature } from '../lib/security/lynk-signature';

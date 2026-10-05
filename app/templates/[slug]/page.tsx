@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { MinimalNav } from '@/components/marketing/MinimalNav';
 import { MinimalFooter } from '@/components/marketing/MinimalFooter';
-import { getTemplateById, getAllAddons, getAllInvitations, getSampleInvitationForTemplate } from '@/lib/store';
+import { getTemplateById, getAllTemplatesAsync, getAllAddons, getAllInvitations, getSampleInvitationForTemplate } from '@/lib/store';
 import { TEMPLATES } from '@/lib/data/catalog';
 import { Template } from '@/types';
 import { InvitationEngine } from '@/components/engine/InvitationEngine';
@@ -20,12 +20,20 @@ export default function TemplateDetailPage() {
   const [viewMode, setViewMode] = useState<'mobile' | 'desktop'>('mobile');
 
   useEffect(() => {
-    const live = getTemplateById(slug);
-    if (live) setTemplate(live);
+    getAllTemplatesAsync().then((allActive) => {
+      const live = allActive.find((t) => t.slug === slug || t.id === slug);
+      if (!live) {
+        setTemplate(undefined);
+      } else {
+        setTemplate(live);
+      }
+    });
 
     const handleUpdate = () => {
-      const updated = getTemplateById(slug);
-      if (updated) setTemplate(updated);
+      getAllTemplatesAsync().then((allActive) => {
+        const live = allActive.find((t) => t.slug === slug || t.id === slug);
+        setTemplate(live);
+      });
     };
     window.addEventListener('uo_store_updated', handleUpdate);
     return () => window.removeEventListener('uo_store_updated', handleUpdate);

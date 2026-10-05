@@ -178,6 +178,95 @@ export function getAllTemplatesWithStatus(): Array<Template & { isDeleted: boole
   });
 }
 
+export async function getAllTemplatesAsync(options?: { includeDeleted?: boolean }): Promise<Template[]> {
+  try {
+    const url = options?.includeDeleted ? '/api/templates?all=true' : '/api/templates';
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.templates)) {
+        return data.templates;
+      }
+    }
+  } catch (err) {
+    console.warn('[Store] Could not fetch templates from API, falling back to local:', err);
+  }
+  return getAllTemplates();
+}
+
+export async function getAllTemplatesWithStatusAsync(): Promise<Array<Template & { isDeleted: boolean; isCustomPrice?: boolean; defaultBasePrice?: number }>> {
+  try {
+    const res = await fetch('/api/templates?all=true');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.templates)) {
+        return data.templates;
+      }
+    }
+  } catch (err) {
+    console.warn('[Store] Could not fetch templates with status from API, falling back to local:', err);
+  }
+  return getAllTemplatesWithStatus();
+}
+
+export async function deleteTemplateAsync(idOrSlug: string, hardDelete: boolean = false): Promise<boolean> {
+  deleteTemplate(idOrSlug);
+  try {
+    const res = await fetch('/api/admin/templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: hardDelete ? 'HARD_DELETE' : 'DELETE',
+        idOrSlug,
+      }),
+    });
+    const data = await res.json();
+    return Boolean(data.success);
+  } catch (err) {
+    console.error('[Store] Error deleting template globally:', err);
+    return false;
+  }
+}
+
+export async function restoreTemplateAsync(idOrSlug: string): Promise<boolean> {
+  restoreTemplate(idOrSlug);
+  try {
+    const res = await fetch('/api/admin/templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'RESTORE',
+        idOrSlug,
+      }),
+    });
+    const data = await res.json();
+    return Boolean(data.success);
+  } catch (err) {
+    console.error('[Store] Error restoring template globally:', err);
+    return false;
+  }
+}
+
+export async function updateTemplatePriceAsync(idOrSlug: string, newPrice: number): Promise<boolean> {
+  updateTemplatePrice(idOrSlug, newPrice);
+  try {
+    const res = await fetch('/api/admin/templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'UPDATE_PRICE',
+        idOrSlug,
+        newPrice,
+      }),
+    });
+    const data = await res.json();
+    return Boolean(data.success);
+  } catch (err) {
+    console.error('[Store] Error updating template price globally:', err);
+    return false;
+  }
+}
+
 export function updateTemplatePrice(idOrSlug: string, newPrice: number): void {
   const prices = { ...getCustomTemplatePrices() };
   const target = TEMPLATES.find((t) => t.id === idOrSlug || t.slug === idOrSlug);
@@ -191,6 +280,11 @@ export function updateTemplatePrice(idOrSlug: string, newPrice: number): void {
   safeSetStorage(STORAGE_KEYS.TEMPLATE_PRICES, prices);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('uo_store_updated'));
+    fetch('/api/admin/templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'UPDATE_PRICE', idOrSlug, newPrice: validPrice }),
+    }).catch(() => {});
   }
 }
 
@@ -207,6 +301,12 @@ export function resetTemplatePrice(idOrSlug: string): void {
   safeSetStorage(STORAGE_KEYS.TEMPLATE_PRICES, prices);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('uo_store_updated'));
+    const defaultPrice = target ? target.basePrice : 99000;
+    fetch('/api/admin/templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'UPDATE_PRICE', idOrSlug, newPrice: defaultPrice }),
+    }).catch(() => {});
   }
 }
 
@@ -222,6 +322,11 @@ export function deleteTemplate(idOrSlug: string): void {
   safeSetStorage(STORAGE_KEYS.DELETED_TEMPLATES, deleted);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('uo_store_updated'));
+    fetch('/api/admin/templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'DELETE', idOrSlug }),
+    }).catch(() => {});
   }
 }
 
@@ -235,6 +340,11 @@ export function restoreTemplate(idOrSlug: string): void {
   safeSetStorage(STORAGE_KEYS.DELETED_TEMPLATES, updated);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('uo_store_updated'));
+    fetch('/api/admin/templates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'RESTORE', idOrSlug }),
+    }).catch(() => {});
   }
 }
 

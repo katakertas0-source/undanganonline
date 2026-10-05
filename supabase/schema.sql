@@ -415,3 +415,34 @@ CREATE POLICY "Users can view own order addons" ON public.order_addons
 
 CREATE POLICY "Service role access for payment webhooks" ON public.payment_webhooks
   FOR ALL TO service_role USING (true);
+
+-- ==============================================================================
+-- 12. TEMPLATES (Global Authoritative Template Catalog & Owner Deletion)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.templates (
+  id TEXT PRIMARY KEY,
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  archetype TEXT NOT NULL,
+  base_price INTEGER NOT NULL DEFAULT 99000,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  is_deleted BOOLEAN NOT NULL DEFAULT false,
+  deleted_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_templates_slug ON public.templates(slug);
+CREATE INDEX IF NOT EXISTS idx_templates_status ON public.templates(is_active, is_deleted);
+
+ALTER TABLE public.templates ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can view active templates" ON public.templates;
+CREATE POLICY "Public can view active templates" ON public.templates
+  FOR SELECT USING (is_active = true AND is_deleted = false);
+
+DROP POLICY IF EXISTS "Service role full access on templates" ON public.templates;
+CREATE POLICY "Service role full access on templates" ON public.templates
+  FOR ALL TO service_role USING (true);
+

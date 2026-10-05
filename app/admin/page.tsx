@@ -16,9 +16,13 @@ import {
   clearAllTestDrafts,
   getGuestsForInvitation,
   getAllTemplatesWithStatus,
+  getAllTemplatesWithStatusAsync,
   deleteTemplate,
+  deleteTemplateAsync,
   restoreTemplate,
+  restoreTemplateAsync,
   updateTemplatePrice,
+  updateTemplatePriceAsync,
   resetTemplatePrice,
   getAllPackagesWithStatus,
   updatePackagePrice,
@@ -124,7 +128,8 @@ export default function AdminPortalPage() {
       setInvitations(invList);
       const orderList = await getAllOrdersAsync();
       setOrders(orderList);
-      setTemplatesList(getAllTemplatesWithStatus());
+      const tmplList = await getAllTemplatesWithStatusAsync();
+      setTemplatesList(tmplList);
       setPackagesList(getAllPackagesWithStatus());
       setAddonsList(getAllAddonsWithStatus());
     } catch (err) {
@@ -314,19 +319,23 @@ export default function AdminPortalPage() {
     setTimeout(() => setStatusChangeMessage(null), 3500);
   };
 
-  const handleDeleteTemplate = (tmpl: Template & { isDeleted: boolean }) => {
-    deleteTemplate(tmpl.id);
+  const handleDeleteTemplate = async (tmpl: Template & { isDeleted: boolean }, hardDelete: boolean = false) => {
+    await deleteTemplateAsync(tmpl.id, hardDelete);
     setTemplateToDelete(null);
-    setStatusChangeMessage(`Template "${tmpl.name}" berhasil dihapus dari katalog publik.`);
-    setTimeout(() => setStatusChangeMessage(null), 3000);
-    loadAdminData();
+    setStatusChangeMessage(
+      hardDelete
+        ? `Template "${tmpl.name}" berhasil dihapus permanen dari sistem database.`
+        : `Template "${tmpl.name}" berhasil dinonaktifkan secara global dari seluruh pengunjung.`
+    );
+    setTimeout(() => setStatusChangeMessage(null), 3500);
+    await loadAdminData();
   };
 
-  const handleRestoreTemplate = (tmpl: Template & { isDeleted: boolean }) => {
-    restoreTemplate(tmpl.id);
-    setStatusChangeMessage(`Template "${tmpl.name}" berhasil dipulihkan ke katalog publik.`);
-    setTimeout(() => setStatusChangeMessage(null), 3000);
-    loadAdminData();
+  const handleRestoreTemplate = async (tmpl: Template & { isDeleted: boolean }) => {
+    await restoreTemplateAsync(tmpl.id);
+    setStatusChangeMessage(`Template "${tmpl.name}" berhasil dipulihkan & aktif kembali untuk publik.`);
+    setTimeout(() => setStatusChangeMessage(null), 3500);
+    await loadAdminData();
   };
 
   const handleOpenPriceModal = (tmpl: Template & { isDeleted: boolean; isCustomPrice?: boolean; defaultBasePrice?: number }) => {
@@ -1879,17 +1888,17 @@ export default function AdminPortalPage() {
           </div>
         </div>
       )}
-      {/* Delete Template Confirmation Modal */}
+      {/* Delete Template Confirmation Modal (Authoritative Owner Access) */}
       {templateToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
-          <div className="bg-[#181818] border border-neutral-800 p-6 sm:p-8 max-w-md w-full text-white shadow-2xl relative">
+          <div className="bg-[#181818] border border-neutral-800 p-6 sm:p-8 max-w-lg w-full text-white shadow-2xl relative">
             <div className="flex items-center gap-3 text-red-400 mb-4">
               <div className="w-10 h-10 rounded-full bg-red-950/60 border border-red-800 flex items-center justify-center shrink-0">
-                <Trash2 className="w-5 h-5" />
+                <Trash2 className="w-5 h-5 text-red-400" />
               </div>
               <div>
                 <h3 className="font-serif text-lg uppercase tracking-wide text-white font-medium">
-                  Hapus Template
+                  Kelola Penghapusan Template
                 </h3>
                 <p className="text-[10px] text-neutral-400 font-mono">
                   {templateToDelete.name} (/{templateToDelete.slug})
@@ -1897,24 +1906,55 @@ export default function AdminPortalPage() {
               </div>
             </div>
 
-            <p className="text-xs text-neutral-300 font-light leading-relaxed mb-6">
-              Apakah Anda yakin ingin menghapus template <strong>&quot;{templateToDelete.name}&quot;</strong>? Template ini akan langsung dihilangkan dari katalog publik (<strong>/templates</strong>), form pemesanan (<strong>/create</strong>), dan editor builder. Anda dapat memulihkannya kembali kapan saja.
+            <p className="text-xs text-neutral-300 font-light leading-relaxed mb-5">
+              Sebagai <strong>Owner / Admin</strong>, Anda memiliki kendali penuh atas ketersediaan template <strong>&quot;{templateToDelete.name}&quot;</strong> di seluruh sistem katakertas.com. Pilih tindakan yang ingin Anda terapkan:
             </p>
 
-            <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800">
+            <div className="space-y-3 mb-6">
+              {/* Option 1: Soft Delete Global */}
+              <div className="p-3.5 bg-[#222222] border border-neutral-700/80 rounded-xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-white">1. Nonaktifkan dari Publik (Direkomendasikan)</span>
+                  <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 bg-amber-950/80 text-amber-300 border border-amber-800 rounded">Global</span>
+                </div>
+                <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
+                  Template seketika <strong>lenyap dari seluruh pengunjung</strong> di katalog (/templates), form pemesanan (/create), dan editor builder. Undangan klien lama yang sudah terbit tetap aman dan Anda dapat memulihkannya kembali kapan saja.
+                </p>
+              </div>
+
+              {/* Option 2: Hard Delete Permanent */}
+              <div className="p-3.5 bg-red-950/20 border border-red-900/40 rounded-xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-red-300">2. Hapus Permanen dari Database</span>
+                  <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 bg-red-950 text-red-400 border border-red-800 rounded">Permanen</span>
+                </div>
+                <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
+                  Menghapus total rekaman template ini dari database Supabase server.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-2.5 pt-4 border-t border-neutral-800">
               <button
                 type="button"
                 onClick={() => setTemplateToDelete(null)}
-                className="px-4 py-2 text-xs uppercase tracking-wider text-neutral-400 hover:text-white border border-neutral-700 transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2 text-xs uppercase tracking-wider text-neutral-400 hover:text-white border border-neutral-700 transition-colors cursor-pointer text-center"
               >
                 Batal
               </button>
               <button
                 type="button"
-                onClick={() => handleDeleteTemplate(templateToDelete)}
-                className="px-5 py-2 text-xs uppercase tracking-wider bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors cursor-pointer shadow-md"
+                onClick={() => handleDeleteTemplate(templateToDelete, false)}
+                className="w-full sm:w-auto px-4 py-2 text-xs uppercase tracking-wider bg-amber-600 hover:bg-amber-700 text-white font-semibold transition-colors cursor-pointer text-center shadow-md"
               >
-                Ya, Hapus Template
+                Nonaktifkan Global
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteTemplate(templateToDelete, true)}
+                className="w-full sm:w-auto px-4 py-2 text-xs uppercase tracking-wider bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors cursor-pointer text-center shadow-md"
+              >
+                Hapus Permanen
               </button>
             </div>
           </div>
